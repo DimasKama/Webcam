@@ -1,6 +1,6 @@
 # Webcams
 
-Mod and plugin that allows players to stream their webcams <p>
+Mod and plugin that allows players to broadcast their webcams <p>
 
 ![screenshot](images/screenshot.jpg)
 
