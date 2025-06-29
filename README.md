@@ -54,5 +54,3 @@ Here are the default values with their descriptions: <p>
 ### Permissions
 
 - `webcam.command.config` - permission to modify Webcam server config
-
-## Notes
