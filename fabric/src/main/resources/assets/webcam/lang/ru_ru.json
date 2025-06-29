@@ -1,0 +1,22 @@
+{
+  "key.categories.webcam": "Webcam",
+  "key.webcam.open_menu": "Открыть меню",
+  "modmenu.descriptionTranslation.webcam": "Вебкамеры в Майнкрафте",
+  "webcam.screen.webcam": "Настройки Webcam",
+  "webcam.screen.webcam.not_connected": "Нет подключения к серверу Webcam",
+  "webcam.screen.webcam.webcam_enabled": "Включить камеру: %s",
+  "webcam.screen.webcam.selected_device": "Устройство: %s",
+  "webcam.screen.webcam.selected_device.none": "Не выбрано",
+  "webcam.screen.webcam.resolution": "Разрешение: %s",
+  "webcam.screen.webcam.resolution.tooltip": "Разрешение изображения на устройстве. Обратите внимание, что фактическое качество изображения зависит от конфигурации сервера.",
+  "webcam.screen.webcam.fps": "Макс. FPS: %s",
+  "webcam.screen.webcam.fps.tooltip": "Высокий FPS может повлиять на производительность",
+  "webcam.screen.webcam.show_icons": "Иконки: %s",
+  "webcam.screen.webcam.show_preview": "Предпросмотр: %s",
+  "webcam.screen.webcam.show_preview.tooltip": "Это может вызвать лаг при открытии этого меню",
+  "webcam.internal_error": "Неизвестная ошибка камеры: %s",
+  "webcam.error.no_available": "Нет доступных камер",
+  "webcam.error.device_unavailable": "Камера %s недоступна",
+  "webcam.error.device_disconnected": "Камера %s отключена",
+  "webcam.error.encode_error": "Ошибка кодировки изображения"
+}

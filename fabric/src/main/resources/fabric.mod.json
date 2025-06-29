@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "webcam",
+  "version": "${version}",
+  "name": "Webcam",
+  "description": "Webcams in Minecraft",
+  "authors": [
+    "DimasKama"
+  ],
+  "license": "All-Rights-Reserved",
+  "icon": "assets/webcam/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "preLaunch": [
+      "ru.dimaskama.webcam.fabric.WebcamPreLaunch"
+    ],
+    "main": [
+      "ru.dimaskama.webcam.fabric.WebcamFabric"
+    ],
+    "client": [
+      "ru.dimaskama.webcam.fabric.client.WebcamFabricClient"
+    ]
+  },
+  "mixins": [
+    "webcam.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": "*",
+    "minecraft": ">=${min_minecraft_version}",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "required": true,
+  "package": "ru.dimaskama.webcam.fabric.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "minVersion": "0.8",
+  "client": [
+    "client.LivingEntityRendererMixin",
+    "client.NativeImageAccessor",
+    "client.PlayerRendererMixin",
+    "client.PlayerRenderStateMixin"
+  ],
+  "mixins": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

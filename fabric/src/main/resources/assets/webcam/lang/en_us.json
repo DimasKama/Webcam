@@ -1,0 +1,22 @@
+{
+  "key.categories.webcam": "Webcam",
+  "key.webcam.open_menu": "Open menu",
+  "modmenu.descriptionTranslation.webcam": "Webcams in Minecraft",
+  "webcam.screen.webcam": "Webcam settings",
+  "webcam.screen.webcam.not_connected": "Not connected to Webcam server",
+  "webcam.screen.webcam.webcam_enabled": "Enable webcam: %s",
+  "webcam.screen.webcam.selected_device": "Device: %s",
+  "webcam.screen.webcam.selected_device.none": "None",
+  "webcam.screen.webcam.resolution": "Resolution: %s",
+  "webcam.screen.webcam.resolution.tooltip": "Device image resolution. Note that actual display quality depends on server configuration",
+  "webcam.screen.webcam.fps": "Max FPS: %s",
+  "webcam.screen.webcam.fps.tooltip": "High FPS may impact performance",
+  "webcam.screen.webcam.show_icons": "Show icons: %s",
+  "webcam.screen.webcam.show_preview": "Show preview: %s",
+  "webcam.screen.webcam.show_preview.tooltip": "This may cause lag when opening this menu",
+  "webcam.internal_error": "Webcam unknown error: %s",
+  "webcam.error.no_available": "No devices available",
+  "webcam.error.device_unavailable": "Device %s is unavailable",
+  "webcam.error.device_disconnected": "Device %s disconnected",
+  "webcam.error.encode_error": "Image encode error"
+}

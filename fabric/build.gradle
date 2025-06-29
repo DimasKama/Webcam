@@ -1,0 +1,35 @@
+apply plugin: 'fabric-loom'
+apply plugin: 'com.gradleup.shadow'
+apply plugin: 'com.modrinth.minotaur'
+
+apply from: "https://raw.githubusercontent.com/henkelmax/mod-gradle-scripts/${mod_gradle_script_version}/mod.gradle"
+
+processResources {
+    filesMatching('fabric.mod.json') {
+        expand 'java_version': java_version,
+                'version': mod_version,
+                'minecraft_version': minecraft_version,
+                'min_minecraft_version': min_minecraft_version
+    }
+}
+
+repositories {
+}
+
+dependencies {
+    include(modImplementation("me.lucko:fabric-permissions-api:${fabric_permissions_api_version}"))
+
+    shadow implementation("org.openpnp:opencv:${opencv_version}")
+}
+
+shadowJar {
+    // Exclude 32-bit binaries
+    exclude("**/x86_32/**")
+    exclude("**/ARMv7/**")
+}
+
+loom {
+    mixin {
+        add("main")
+    }
+}

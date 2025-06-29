@@ -1,0 +1,44 @@
+plugins {
+    id 'com.gradleup.shadow' version "${shadow_version}" apply false
+    id 'com.modrinth.minotaur' version "${minotaur_version}" apply false
+    id 'fabric-loom' version "${fabric_loom_version}" apply false
+    id 'xyz.jpenilla.run-paper' version "${run_task_version}" apply false
+    id 'io.papermc.hangar-publish-plugin' version "${hangar_publish_version}" apply false
+}
+
+apply from: "https://raw.githubusercontent.com/henkelmax/mod-gradle-scripts/${mod_gradle_script_version}/taskutils.gradle"
+
+tasks.register('publishModsToModrinth') {
+    group = 'webcam'
+    doLast {
+        runGradleTasks(['clean'], ['fabric:modrinth'])
+    }
+}
+
+tasks.register('publishPluginToModrinth') {
+    group = 'webcam'
+    doLast {
+        runGradleTasks(['clean'], ['spigot:modrinth'])
+    }
+}
+
+tasks.register('publishAllToModrinth') {
+    group = 'webcam'
+    doLast {
+        runGradleTasks(['clean'], ['fabric:modrinth', 'spigot:modrinth'])
+    }
+}
+
+tasks.register('publishPluginsToHangar') {
+    group = 'webcam'
+    doLast {
+        runGradleTasks(['clean'], ['spigot:publishAllPublicationsToHangar'])
+    }
+}
+
+tasks.register('publishEverything') {
+    group = 'webcam'
+    doLast {
+        runGradleTasks(['clean'], ['fabric:modrinth', 'spigot:modrinth', 'spigot:publishAllPublicationsToHangar'])
+    }
+}

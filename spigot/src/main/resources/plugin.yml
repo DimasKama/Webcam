@@ -1,0 +1,15 @@
+name: webcam
+version: ${version}
+main: ru.dimaskama.webcam.spigot.WebcamSpigot
+description: Webcams in Minecraft
+author: DimasKama
+commands:
+  webcamconfig:
+    description: "Command for modifying Webcam server config"
+    permission: webcam.command.config
+    permission-message: "You do not have permission to modify Webcam server config"
+    usage: "/webcamconfig <field> [new_value]"
+permissions:
+  webcam.command.config:
+    default: op
+    description: "Allows you to modify Webcam server config"
