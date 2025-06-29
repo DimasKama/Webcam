@@ -49,7 +49,7 @@ Here are the default values with their descriptions: <p>
 
 ### Commands
 
-- `/webcamconfig <field> [new_value]` - command to read/update config values. Not all values can be changed with it. Requires `webcam.command.config` or OP.
+- `/webcamconfig <field> [new_value]` - command to read/update config values. Not all values can be changed with it. Requires `webcam.command.config` permission or OP.
 
 ### Permissions
 
