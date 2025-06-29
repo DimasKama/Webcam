@@ -40,3 +40,6 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+/spigot/run/
+/fabric/run/
+/common/run/
