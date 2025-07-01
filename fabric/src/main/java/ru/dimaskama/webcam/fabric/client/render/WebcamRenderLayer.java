@@ -41,7 +41,7 @@ public class WebcamRenderLayer<M extends HumanoidModel<PlayerRenderState>> exten
                             poseStack.pushPose();
                             M entityModel = this.getParentModel();
                             entityModel.root().translateAndRotate(poseStack);
-                            (renderState.showHat ? entityModel.hat : entityModel.getHead()).translateAndRotate(poseStack);
+                            entityModel.getHead().translateAndRotate(poseStack);
                             PoseStack.Pose pose = poseStack.last();
                             VertexConsumer consumer = consumers.getBuffer(WebcamRenderTypes.square(renderData.textureId()));
                             consumer.addVertex(pose, -0.25F, -0.5F, -0.26F).setUv(0.0F, 0.0F);
