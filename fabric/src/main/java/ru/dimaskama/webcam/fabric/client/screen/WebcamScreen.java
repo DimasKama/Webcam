@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -55,6 +55,7 @@ public class WebcamScreen extends Screen {
             NativeImage newImage = ImageUtil.convertJpgToNativeImage(prevImage, jpgImage);
             if (newImage != prevImage) {
                 previewTexture = new DynamicTexture(PREVIEW_TEXTURE::getPath, newImage);
+                previewTexture.setFilter(true, false);
                 minecraft.getTextureManager().register(PREVIEW_TEXTURE, previewTexture);
             } else {
                 previewTexture.upload();
@@ -165,7 +166,7 @@ public class WebcamScreen extends Screen {
     @Override
     public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
         super.renderBackground(guiGraphics, mouseX, mouseY, delta);
-        guiGraphics.blitSprite(RenderType::guiTextured, BACKGROUND_SPRITE, menuX, menuY, MENU_WIDTH, MENU_HEIGHT);
+        guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_SPRITE, menuX, menuY, MENU_WIDTH, MENU_HEIGHT);
         guiGraphics.drawString(font, title, (width - font.width(title)) >> 1, menuY + 7, 0xFF555555, false);
         if (errorMessage != null) {
             if (System.currentTimeMillis() - errorMessageTime <= 4000L) {
@@ -179,7 +180,7 @@ public class WebcamScreen extends Screen {
             int previewDim = previewBottomY - previewY;
             if (previewDim > 1) {
                 int previewX = (width - previewDim) >> 1;
-                guiGraphics.blit(RenderType::guiTextured, PREVIEW_TEXTURE, previewX, previewY, 0.0F, 0.0F, previewDim, previewDim, previewDim, previewDim);
+                guiGraphics.blit(RenderPipelines.GUI_TEXTURED, PREVIEW_TEXTURE, previewX, previewY, 0.0F, 0.0F, previewDim, previewDim, previewDim, previewDim);
             }
         }
     }

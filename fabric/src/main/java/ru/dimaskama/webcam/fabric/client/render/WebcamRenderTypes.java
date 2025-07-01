@@ -6,14 +6,13 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.Util;
 import net.minecraft.client.renderer.*;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.TriState;
 import ru.dimaskama.webcam.fabric.WebcamFabric;
 
 import java.util.function.Function;
 
 public class WebcamRenderTypes {
 
-    private static final RenderPipeline SQUARE_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_COLOR_SNIPPET)
+    private static final RenderPipeline SQUARE_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
             .withLocation(WebcamFabric.id("pipeline/square"))
             .withVertexShader("core/position_tex")
             .withFragmentShader(WebcamFabric.id("core/square"))
@@ -25,10 +24,10 @@ public class WebcamRenderTypes {
             1536,
             SQUARE_PIPELINE,
             RenderType.CompositeState.builder()
-                    .setTextureState(new RenderStateShard.TextureStateShard(textureId, TriState.TRUE, false))
+                    .setTextureState(new RenderStateShard.TextureStateShard(textureId, false))
                     .createCompositeState(false)
     ));
-    private static final RenderPipeline ROUND_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_COLOR_SNIPPET)
+    private static final RenderPipeline ROUND_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_PROJECTION_SNIPPET)
             .withLocation(WebcamFabric.id("pipeline/square"))
             .withVertexShader("core/position_tex")
             .withFragmentShader(WebcamFabric.id("core/round"))
@@ -40,7 +39,7 @@ public class WebcamRenderTypes {
             1536,
             ROUND_PIPELINE,
             RenderType.CompositeState.builder()
-                    .setTextureState(new RenderStateShard.TextureStateShard(textureId, TriState.TRUE, false))
+                    .setTextureState(new RenderStateShard.TextureStateShard(textureId, false))
                     .createCompositeState(false)
     ));
 

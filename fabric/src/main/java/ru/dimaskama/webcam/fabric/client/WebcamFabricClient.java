@@ -6,9 +6,9 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.minecraft.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -49,8 +49,7 @@ public class WebcamFabricClient implements ClientModInitializer {
         Util.backgroundExecutor().execute(Webcams::updateDevices);
 
         WebcamRenderTypes.init();
-        HudLayerRegistrationCallback.EVENT.register(layeredDrawer ->
-                layeredDrawer.attachLayerAfter(IdentifiedLayer.MISC_OVERLAYS, WebcamFabric.id("webcam_hud"), WebcamHud::drawHud));
+        HudElementRegistry.attachElementAfter(VanillaHudElements.MISC_OVERLAYS, WebcamFabric.id("webcam_hud"), WebcamHud::drawHud);
         WorldRenderEvents.AFTER_ENTITIES.register(WebcamWorldRenderer::renderWorldWebcams);
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) ->
