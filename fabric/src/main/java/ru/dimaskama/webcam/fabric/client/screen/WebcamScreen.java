@@ -54,7 +54,7 @@ public class WebcamScreen extends Screen {
             NativeImage prevImage = previewTexture != null ? previewTexture.getPixels() : null;
             NativeImage newImage = ImageUtil.convertJpgToNativeImage(prevImage, jpgImage);
             if (newImage != prevImage) {
-                previewTexture = new DynamicTexture(newImage);
+                previewTexture = new DynamicTexture(PREVIEW_TEXTURE::getPath, newImage);
                 minecraft.getTextureManager().register(PREVIEW_TEXTURE, previewTexture);
             } else {
                 previewTexture.upload();

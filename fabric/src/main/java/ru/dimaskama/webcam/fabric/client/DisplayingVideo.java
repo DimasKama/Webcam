@@ -54,7 +54,7 @@ public class DisplayingVideo {
                 texture.setPixels(newImage);
                 texture.upload();
             } else {
-                texture = new DynamicTexture(newImage);
+                texture = new DynamicTexture(textureId::getPath, newImage);
                 Minecraft.getInstance().getTextureManager().register(textureId, texture);
             }
             textureUploaded = true;
