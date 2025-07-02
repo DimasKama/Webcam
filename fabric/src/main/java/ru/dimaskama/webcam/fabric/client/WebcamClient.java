@@ -246,13 +246,13 @@ public class WebcamClient extends Thread {
         private void handlePacket(Packet packet) {
             if (packet instanceof ServerConfigPacket(SyncedServerConfig config)) {
                 serverConfig = config;
-                Minecraft.getInstance().execute(Webcams::updateImageDimension);
+                Webcams.updateImageDimension();
                 return;
             }
             if (packet instanceof AuthAckPacket) {
                 authenticated = true;
                 Webcam.getLogger().info("Successfully authenticated to server");
-                Minecraft.getInstance().execute(Webcams::updateCapturing);
+                Webcams.updateCapturing();
                 return;
             }
             if (packet instanceof KeepAlivePacket) {

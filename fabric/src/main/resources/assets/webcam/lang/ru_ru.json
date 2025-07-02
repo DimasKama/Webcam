@@ -7,6 +7,7 @@
   "webcam.screen.webcam.webcam_enabled": "Включить камеру: %s",
   "webcam.screen.webcam.selected_device": "Устройство: %s",
   "webcam.screen.webcam.selected_device.none": "Не выбрано",
+  "webcam.screen.webcam.update_devices": "Обновить доступные устройства",
   "webcam.screen.webcam.resolution": "Разрешение: %s",
   "webcam.screen.webcam.resolution.tooltip": "Разрешение изображения на устройстве. Обратите внимание, что фактическое качество изображения зависит от конфигурации сервера.",
   "webcam.screen.webcam.fps": "Макс. FPS: %s",
