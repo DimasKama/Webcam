@@ -15,6 +15,6 @@ public interface WebcamService {
 
     void sendToPlayer(UUID player, Message message);
 
-    void acceptForNearbyPlayers(UUID entity, double maxDistance, Consumer<Set<UUID>> action);
+    void acceptForNearbyPlayers(UUID playerUuid, double maxDistance, Consumer<Set<UUID>> action);
 
 }
