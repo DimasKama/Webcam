@@ -46,15 +46,16 @@ public class WebcamWorldRenderer {
                     (customRotation != null ? customRotation.x() : -camera.getXRot()) * Mth.DEG_TO_RAD,
                     0.0F
             ));
-            float sc = 0.5F * custom.getSize();
+            float w = 0.5F * custom.getWidth();
+            float h = 0.5F * custom.getHeight();
             PoseStack.Pose pose = poseStack.last();
             VertexConsumer consumer = context.consumers().getBuffer(custom.getShape() == VideoDisplayShape.ROUND
                     ? WebcamRenderTypes.round(textureId)
                     : WebcamRenderTypes.square(textureId));
-            consumer.addVertex(pose, -sc, sc, 0.0F).setUv(0.0F, 0.0F);
-            consumer.addVertex(pose, -sc, -sc, 0.0F).setUv(0.0F, 1.0F);
-            consumer.addVertex(pose, sc, -sc, 0.0F).setUv(1.0F, 1.0F);
-            consumer.addVertex(pose, sc, sc, 0.0F).setUv(1.0F, 0.0F);
+            consumer.addVertex(pose, -w, h, 0.0F).setUv(0.0F, 0.0F);
+            consumer.addVertex(pose, -w, -h, 0.0F).setUv(0.0F, 1.0F);
+            consumer.addVertex(pose, w, -h, 0.0F).setUv(1.0F, 1.0F);
+            consumer.addVertex(pose, w, h, 0.0F).setUv(1.0F, 0.0F);
             poseStack.popPose();
         }
     }
