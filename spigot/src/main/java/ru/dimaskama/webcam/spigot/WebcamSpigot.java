@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
@@ -97,21 +96,19 @@ public class WebcamSpigot extends JavaPlugin {
             }
 
             @Override
-            public void acceptForNearbyPlayers(UUID entity, double maxDistance, Consumer<Set<UUID>> action) {
-                Bukkit.getScheduler().runTask(WebcamSpigot.this, () -> {
-                    Entity found = Bukkit.getEntity(entity);
-                    if (found != null) {
-                        Location pos = found.getLocation();
-                        double maxDistanceSqr = maxDistance * maxDistance;
-                        Set<UUID> players = new HashSet<>();
-                        for (Player player : found.getWorld().getPlayers()) {
-                            if (player.getLocation().distanceSquared(pos) <= maxDistanceSqr) {
-                                players.add(player.getUniqueId());
-                            }
+            public void acceptForNearbyPlayers(UUID playerUuid, double maxDistance, Consumer<Set<UUID>> action) {
+                Player player = Bukkit.getPlayer(playerUuid);
+                if (player != null) {
+                    Location pos = player.getLocation();
+                    double maxDistanceSqr = maxDistance * maxDistance;
+                    Set<UUID> players = new HashSet<>();
+                    for (Player levelPlayer : player.getWorld().getPlayers()) {
+                        if (levelPlayer.getLocation().distanceSquared(pos) <= maxDistanceSqr) {
+                            players.add(levelPlayer.getUniqueId());
                         }
-                        action.accept(players);
                     }
-                });
+                    action.accept(players);
+                }
             }
         });
         getCommand("webcamconfig").setTabCompleter(this::tabCompleteConfigCommand);

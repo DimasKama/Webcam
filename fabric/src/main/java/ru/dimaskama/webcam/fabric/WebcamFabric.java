@@ -8,9 +8,8 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import ru.dimaskama.webcam.Webcam;
 import ru.dimaskama.webcam.WebcamEvents;
@@ -21,9 +20,7 @@ import ru.dimaskama.webcam.message.Message;
 import ru.dimaskama.webcam.message.ServerMessaging;
 
 import javax.annotation.Nullable;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class WebcamFabric implements ModInitializer {
@@ -51,23 +48,24 @@ public class WebcamFabric implements ModInitializer {
             }
 
             @Override
-            public void acceptForNearbyPlayers(UUID entity, double maxDistance, Consumer<Set<UUID>> action) {
+            public void acceptForNearbyPlayers(UUID playerUuid, double maxDistance, Consumer<Set<UUID>> action) {
                 MinecraftServer server = WebcamFabric.server;
                 if (server != null) {
-                    for (ServerLevel level : server.getAllLevels()) {
-                        Entity foundEntity = level.getEntity(entity);
-                        if (foundEntity != null) {
-                            Vec3 pos = foundEntity.position();
-                            double maxDistanceSqr = maxDistance * maxDistance;
+                    ServerPlayer player = server.getPlayerList().getPlayer(playerUuid);
+                    if (player != null) {
+                        try {
+                            List<Player> levelPlayers = new ArrayList<>(player.level().players());
                             Set<UUID> players = new HashSet<>();
-                            for (ServerPlayer player : level.players()) {
-                                if (player.position().distanceToSqr(pos) <= maxDistanceSqr) {
-                                    players.add(player.getUUID());
+                            Vec3 pos = player.position();
+                            double maxDistanceSqr = maxDistance * maxDistance;
+                            players.add(player.getUUID());
+                            for (Player levelPlayer : levelPlayers) {
+                                if (levelPlayer.position().distanceToSqr(pos) <= maxDistanceSqr) {
+                                    players.add(levelPlayer.getUUID());
                                 }
                             }
                             action.accept(players);
-                            break;
-                        }
+                        } catch (ConcurrentModificationException ignored) {}
                     }
                 }
             }
