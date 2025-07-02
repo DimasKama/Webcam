@@ -11,13 +11,11 @@ import ru.dimaskama.webcam.Webcam;
 import ru.dimaskama.webcam.fabric.client.config.ClientConfig;
 import ru.dimaskama.webcam.fabric.client.config.Resolution;
 import ru.dimaskama.webcam.fabric.client.screen.WebcamScreen;
-import ru.dimaskama.webcam.net.packet.CloseSourceC2SPacket;
 
-// Maintained by RenderThread
 public class Webcams {
 
-    private static IntList devices = IntList.of();
-    private static CapturingDevice current;
+    private static volatile IntList devices = IntList.of();
+    private static volatile CapturingDevice current;
 
     public static void init() {
         Webcam.getLogger().info("Loading OpenCV...");
@@ -28,8 +26,13 @@ public class Webcams {
     }
 
     // OpenCV has no function to list available devices, so we have to try to start VideoCapture on each index
-    public static void updateDevices() {
+    public static synchronized void updateDevices() {
         Webcam.getLogger().info("Updating available webcam devices. Some errors may be printed");
+        CapturingDevice prev = current;
+        if (prev != null) {
+            current = null;
+            prev.close();
+        }
         int max = WebcamFabricClient.CONFIG.getData().maxDevices();
         IntList list = new IntArrayList();
         for (int i = 0; i < max; i++) {
@@ -46,18 +49,26 @@ public class Webcams {
             }
         }
         devices = IntLists.unmodifiable(list);
+        if (prev != null) {
+            try {
+                current = prev.recreate();
+                current.start();
+            } catch (WebcamException e) {
+                WebcamFabricClient.onWebcamError(e);
+            }
+        }
     }
 
     public static IntList getDevices() {
         return devices;
     }
 
-    public static void updateCapturing() {
+    public static synchronized void updateCapturing() {
         ClientConfig config = WebcamFabricClient.CONFIG.getData();
         updateCapturing(config.webcamEnabled(), config.selectedDevice(), config.webcamResolution(), config.webcamFps());
     }
 
-    public static void updateCapturing(boolean enabled, int device, Resolution resolution, int maxFps) {
+    public static synchronized void updateCapturing(boolean enabled, int device, Resolution resolution, int maxFps) {
         if (enabled && device != -1) {
             if (current == null || current.getDeviceNumber() != device) {
                 stopCapturing();
@@ -77,7 +88,7 @@ public class Webcams {
         }
     }
 
-    public static void updateImageDimension() {
+    public static synchronized void updateImageDimension() {
         WebcamClient client = WebcamClient.getInstance();
         if (client != null && current != null) {
             current.setSquareDimension(client.getServerConfig().imageDimension());
@@ -88,7 +99,7 @@ public class Webcams {
         return current != null;
     }
 
-    public static void stopCapturing() {
+    public static synchronized void stopCapturing() {
         if (current != null) {
             current.close();
             Throwable error = current.getError();
@@ -100,6 +111,12 @@ public class Webcams {
     }
 
     public static void tick() {
+        if (current != null) {
+            tickInternal();
+        }
+    }
+
+    private static synchronized void tickInternal() {
         if (current != null) {
             Throwable error = current.getError();
             if (error != null) {

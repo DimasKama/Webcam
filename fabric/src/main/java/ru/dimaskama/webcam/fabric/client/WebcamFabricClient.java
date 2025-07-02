@@ -9,7 +9,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
-import net.minecraft.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
@@ -23,6 +22,7 @@ import ru.dimaskama.webcam.fabric.client.render.WebcamHud;
 import ru.dimaskama.webcam.fabric.client.render.WebcamRenderTypes;
 import ru.dimaskama.webcam.fabric.client.render.WebcamWorldRenderer;
 import ru.dimaskama.webcam.fabric.client.screen.WebcamScreen;
+import ru.dimaskama.webcam.fabric.client.screen.widget.UpdateDevicesButton;
 import ru.dimaskama.webcam.message.Channel;
 import ru.dimaskama.webcam.message.SecretMessage;
 import ru.dimaskama.webcam.message.SecretRequestMessage;
@@ -46,7 +46,7 @@ public class WebcamFabricClient implements ClientModInitializer {
         CONFIG.loadOrCreate();
 
         Webcams.init();
-        Util.backgroundExecutor().execute(Webcams::updateDevices);
+        UpdateDevicesButton.updateDevices();
 
         WebcamRenderTypes.init();
         HudElementRegistry.attachElementAfter(VanillaHudElements.MISC_OVERLAYS, WebcamFabric.id("webcam_hud"), WebcamHud::drawHud);
