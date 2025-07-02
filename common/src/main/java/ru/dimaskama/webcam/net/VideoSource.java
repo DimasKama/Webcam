@@ -163,15 +163,17 @@ public abstract class VideoSource {
 
         public static final byte CODE = 2;
         private final Vector3dc pos;
-        private final float size;
+        private final float width;
+        private final float height;
         private final VideoDisplayShape shape;
         @Nullable
         private final Vector2fc customRotation;
 
-        public Custom(UUID uuid, double maxDistance, Vector3dc pos, float size, VideoDisplayShape shape, @Nullable Vector2fc customRotation) {
+        public Custom(UUID uuid, double maxDistance, Vector3dc pos, float width, float height, VideoDisplayShape shape, @Nullable Vector2fc customRotation) {
             super(uuid, maxDistance);
             this.pos = pos;
-            this.size = size;
+            this.width = width;
+            this.height = height;
             this.shape = shape;
             this.customRotation = customRotation;
         }
@@ -179,7 +181,8 @@ public abstract class VideoSource {
         public Custom(ByteBuffer buffer) {
             super(buffer);
             this.pos = new Vector3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
-            this.size = buffer.getFloat();
+            this.width = buffer.getFloat();
+            this.height = buffer.getFloat();
             this.shape = VideoDisplayShape.byCode(buffer.get());
             this.customRotation = readCustomRotation(buffer);
         }
@@ -188,7 +191,8 @@ public abstract class VideoSource {
         public void writeBytes(ByteBuffer buffer) {
             super.writeBytes(buffer);
             buffer.putDouble(pos.x()).putDouble(pos.y()).putDouble(pos.z())
-                    .putFloat(size)
+                    .putFloat(width)
+                    .putFloat(height)
                     .put(shape.code);
             writeCustomRotation(buffer, customRotation);
         }
@@ -202,8 +206,12 @@ public abstract class VideoSource {
             return pos;
         }
 
-        public float getSize() {
-            return size;
+        public float getWidth() {
+            return width;
+        }
+
+        public float getHeight() {
+            return height;
         }
 
         public VideoDisplayShape getShape() {
