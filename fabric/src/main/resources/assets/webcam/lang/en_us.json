@@ -7,6 +7,7 @@
   "webcam.screen.webcam.webcam_enabled": "Enable webcam: %s",
   "webcam.screen.webcam.selected_device": "Device: %s",
   "webcam.screen.webcam.selected_device.none": "None",
+  "webcam.screen.webcam.update_devices": "Update available devices",
   "webcam.screen.webcam.resolution": "Resolution: %s",
   "webcam.screen.webcam.resolution.tooltip": "Device image resolution. Note that actual display quality depends on server configuration",
   "webcam.screen.webcam.fps": "Max FPS: %s",

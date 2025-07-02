@@ -15,10 +15,7 @@ import ru.dimaskama.webcam.fabric.client.WebcamClient;
 import ru.dimaskama.webcam.fabric.client.WebcamFabricClient;
 import ru.dimaskama.webcam.fabric.client.Webcams;
 import ru.dimaskama.webcam.fabric.client.config.ClientConfig;
-import ru.dimaskama.webcam.fabric.client.screen.widget.ClampedIntSlider;
-import ru.dimaskama.webcam.fabric.client.screen.widget.OnOffButton;
-import ru.dimaskama.webcam.fabric.client.screen.widget.ResolutionSelectButton;
-import ru.dimaskama.webcam.fabric.client.screen.widget.DeviceSelectButton;
+import ru.dimaskama.webcam.fabric.client.screen.widget.*;
 import ru.dimaskama.webcam.net.packet.CloseSourceC2SPacket;
 
 // This screen can be only opened if the client is connected to a Webcam server
@@ -88,9 +85,13 @@ public class WebcamScreen extends Screen {
         buttonY += 18;
         addRenderableWidget(new DeviceSelectButton(
                 menuX + 4, buttonY,
-                MENU_WIDTH - 8, 16,
+                MENU_WIDTH - 8 - 17, 16,
                 config.selectedDevice(),
                 s -> updateConfig(config.withSelectedDevice(s))
+        ));
+        addRenderableWidget(new UpdateDevicesButton(
+                menuX + MENU_WIDTH - 4 - 16, buttonY,
+                16, 16
         ));
         buttonY += 18;
         addRenderableWidget(new ResolutionSelectButton(
@@ -172,7 +173,7 @@ public class WebcamScreen extends Screen {
                 guiGraphics.drawCenteredString(font, errorMessage, width >> 1, menuY + MENU_HEIGHT + 10, 0xFFFF5555);
             }
         }
-        if (showPreview && previewTexture != null) {
+        if (showPreview && previewTexture != null && Webcams.isCapturing()) {
             // Show preview is ON and the first preview frame is loaded
             int previewY = buttonsEndY;
             int previewBottomY = menuY + MENU_HEIGHT - 4;

@@ -47,6 +47,10 @@ public class CapturingDevice extends Thread {
         setUncaughtExceptionHandler((t, e) -> error = e);
     }
 
+    public CapturingDevice recreate() throws WebcamException {
+        return new CapturingDevice(deviceNumber, resolution, maxFps, squareDimension, frameConsumer);
+    }
+
     public int getDeviceNumber() {
         return deviceNumber;
     }
