@@ -22,7 +22,7 @@ Webcam connection is encrypted, but we don't guarantee the security of it. Use a
 
 ## Setup on server
 
-You need to open port on your server to make Webcam server work. This is port `25454` by default. You can change the port in server config
+You need to open port on your server to make Webcam server work. This is port `25454`/`udp` by default. You can change the port in server config
 
 ### Config
 
