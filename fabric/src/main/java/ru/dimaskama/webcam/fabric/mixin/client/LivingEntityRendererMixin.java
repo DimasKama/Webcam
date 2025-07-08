@@ -15,7 +15,7 @@ import ru.dimaskama.webcam.net.VideoSource;
 abstract class LivingEntityRendererMixin {
 
     @ModifyReturnValue(
-            method = "shouldShowName(Lnet/minecraft/world/entity/LivingEntity;D)Z",
+            method = "shouldShowName(Lnet/minecraft/world/entity/LivingEntity;)Z",
             at = @At("RETURN")
     )
     private boolean modifyShouldShowName(boolean original, @Local(argsOnly = true) LivingEntity entity) {

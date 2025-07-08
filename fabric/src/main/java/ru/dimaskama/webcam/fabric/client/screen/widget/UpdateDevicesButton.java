@@ -6,7 +6,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import ru.dimaskama.webcam.fabric.WebcamFabric;
@@ -48,7 +47,7 @@ public class UpdateDevicesButton extends AbstractButton {
         super.renderWidget(guiGraphics, mouseX, mouseY, partialTick);
         int spriteX = getX() + ((getWidth() - 16) >> 1);
         int spriteY = getY() + ((getHeight() - 16) >> 1);
-        guiGraphics.blitSprite(RenderType::guiTextured, SPRITE, spriteX, spriteY, 16, 16, active ? 0xFFFFFFFF : 0xFF777777);
+        guiGraphics.blitSprite(SPRITE, spriteX, spriteY, 16, 16);
     }
 
     @Override

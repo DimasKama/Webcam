@@ -5,7 +5,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import ru.dimaskama.webcam.fabric.WebcamFabric;
 import ru.dimaskama.webcam.fabric.client.WebcamFabricClient;
@@ -22,7 +21,7 @@ public class WebcamHud {
             Window window = Minecraft.getInstance().getWindow();
             int height = window.getGuiScaledHeight();
             ResourceLocation sprite = Webcams.isCapturing() ? WEBCAM_SPRITE : WEBCAM_DISABLED_SPRITE;
-            guiGraphics.blitSprite(RenderType::guiTextured, sprite, IS_VOICECHAT_LOADED ? 32 : 16, height - 32, 16, 16);
+            guiGraphics.blitSprite(sprite, IS_VOICECHAT_LOADED ? 32 : 16, height - 32, 16, 16);
         }
     }
 

@@ -1,6 +1,6 @@
 {
-  "vertex": "minecraft:core/position_tex",
-  "fragment": "webcam:core/square",
+  "vertex": "minecraft:position_tex",
+  "fragment": "webcam:square",
   "samplers": [
     {
       "name": "Sampler0"
