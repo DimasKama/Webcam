@@ -6,8 +6,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -15,7 +14,6 @@ import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 import ru.dimaskama.webcam.Webcam;
 import ru.dimaskama.webcam.config.JsonConfig;
-import ru.dimaskama.webcam.fabric.WebcamFabric;
 import ru.dimaskama.webcam.fabric.WebcamFabricMessaging;
 import ru.dimaskama.webcam.fabric.client.config.ClientConfig;
 import ru.dimaskama.webcam.fabric.client.render.WebcamHud;
@@ -49,8 +47,7 @@ public class WebcamFabricClient implements ClientModInitializer {
         UpdateDevicesButton.updateDevices();
 
         WebcamRenderTypes.init();
-        HudLayerRegistrationCallback.EVENT.register(layeredDrawer ->
-                layeredDrawer.attachLayerAfter(IdentifiedLayer.MISC_OVERLAYS, WebcamFabric.id("webcam_hud"), WebcamHud::drawHud));
+        HudRenderCallback.EVENT.register(WebcamHud::drawHud);
         WorldRenderEvents.AFTER_ENTITIES.register(WebcamWorldRenderer::renderWorldWebcams);
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) ->
