@@ -1,4 +1,4 @@
-# Webcams
+# Webcam
 
 Mod and plugin that allows players to broadcast their webcams <p>
 
