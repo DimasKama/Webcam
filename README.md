@@ -25,7 +25,7 @@ For the client, just put the mod in the `mods` directory with the Fabric API. Th
 |    ![webcam_connecting](images/webcam_connecting.png)    | Connecting to Webcam server    |
 | ![webcam_no_connection](images/webcam_no_connection.png) | Not connected to Webcam server |
 
-### Encryption
+## Encryption
 
 Webcam connection is encrypted, but we don't guarantee the security of it. Use at your own risk!
 
