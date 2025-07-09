@@ -123,6 +123,12 @@ public class Webcams {
                 WebcamFabricClient.onWebcamError(error);
                 current.close();
                 current = null;
+            } else {
+                WebcamClient client = WebcamClient.getInstance();
+                if (client == null || client.isClosed()) {
+                    current.close();
+                    current = null;
+                }
             }
         }
     }

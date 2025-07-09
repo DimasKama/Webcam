@@ -75,13 +75,12 @@ public class WebcamFabricClient implements ClientModInitializer {
 
     private static void onClientTick(Minecraft minecraft) {
         WebcamClient client = WebcamClient.getInstance();
-        boolean clientNotClosed = client != null && !client.isClosed();
-        if (clientNotClosed) {
+        if (client != null && !client.isClosed()) {
             client.tick();
         }
         Webcams.tick();
         while (OPEN_WEBCAM_MENU_KEY.consumeClick()) {
-            if (clientNotClosed) {
+            if (client != null && !client.isClosed() && client.isAuthenticated()) {
                 minecraft.setScreen(new WebcamScreen(null));
             } else {
                 onWebcamError(Component.translatable("webcam.screen.webcam.not_connected"));

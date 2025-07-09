@@ -1,1 +1,3 @@
-- Minecraft 1.21.3 backport
+### Fabric
+- Added more informative icons
+- Fix menu open ability while not authenticated to webcam server
