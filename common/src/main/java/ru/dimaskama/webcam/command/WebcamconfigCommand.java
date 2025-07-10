@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 public class WebcamconfigCommand {
 
     public static final String COMMAND_NAME = "webcamconfig";
-    private static final List<String> FIELDS = List.of("max_display_distance", "display_on_face", "display_shape", "display_offset_y", "display_size", "hide_nicknames", "image_dimension", "mtu");
+    private static final List<String> FIELDS = List.of("max_display_distance", "display_on_face", "display_shape", "display_offset_y", "display_size", "hide_nicknames", "display_self_webcam", "image_dimension", "mtu");
 
     public static Stream<String> suggestFields(String start) {
         String lowerCase = start.toLowerCase(Locale.ROOT);
@@ -38,7 +38,10 @@ public class WebcamconfigCommand {
             return "display_size: " + config.displaySize();
         }
         if (field.equalsIgnoreCase("hide_nicknames")) {
-            return "hide_nicknames: " + config.synced().mtu();
+            return "hide_nicknames: " + config.hideNicknames();
+        }
+        if (field.equalsIgnoreCase("display_self_webcam")) {
+            return "display_self_webcam: " + config.displaySelfWebcam();
         }
         if (field.equalsIgnoreCase("image_dimension")) {
             return "image_dimension: " + config.synced().imageDimension();
@@ -81,6 +84,11 @@ public class WebcamconfigCommand {
             boolean booleanValue = Boolean.parseBoolean(newValue);
             updateConfig(config, config.withHideNicknames(booleanValue));
             return "hide_nicknames set to " + booleanValue;
+        }
+        if (field.equalsIgnoreCase("display_self_webcam")) {
+            boolean booleanValue = Boolean.parseBoolean(newValue);
+            updateConfig(config, config.withDisplaySelfWebcam(booleanValue));
+            return "display_self_webcam set to " + booleanValue;
         }
         if (field.equalsIgnoreCase("image_dimension")) {
             int intValue = getIntValue(newValue, SyncedServerConfig.MIN_IMAGE_DIMENSION, SyncedServerConfig.MAX_IMAGE_DIMENSION);

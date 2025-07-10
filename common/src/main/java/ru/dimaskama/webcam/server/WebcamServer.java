@@ -147,11 +147,11 @@ public class WebcamServer extends Thread {
         });
     }
 
-    public void broadcastNearby(UUID player, Packet packet, double maxDist) {
+    public void broadcastNearby(UUID player, Packet packet, double maxDist, boolean includeSelf) {
         Webcam.getService().acceptForNearbyPlayers(
                 player,
                 maxDist,
-                players -> broadcast(packet, p -> players.contains(p.getUuid()) && !p.getUuid().equals(player))
+                players -> broadcast(packet, p -> players.contains(p.getUuid()) && (includeSelf || !p.getUuid().equals(player)))
         );
     }
 
@@ -280,13 +280,15 @@ public class WebcamServer extends Thread {
                                     : new VideoSource.AboveHead(uuid, maxDistance, config.displayShape(), config.displayOffsetY(), config.displaySize(), config.hideNicknames(), null),
                             chunk
                     );
-                    broadcastNearby(uuid, chunkS2C, maxDistance);
+                    boolean includeSelf = config.displaySelfWebcam();
+                    broadcastNearby(uuid, chunkS2C, maxDistance, includeSelf);
                 }
                 return;
             }
             if (packet.packet() instanceof CloseSourceC2SPacket) {
                 UUID uuid = packet.sender().getUuid();
-                broadcastNearby(uuid, new CloseSourceS2CPacket(uuid), Webcam.SERVER_CONFIG.getData().maxDisplayDistance());
+                boolean includeSelf = Webcam.SERVER_CONFIG.getData().displaySelfWebcam();
+                broadcastNearby(uuid, new CloseSourceS2CPacket(uuid), Webcam.SERVER_CONFIG.getData().maxDisplayDistance(), includeSelf);
             }
         }
 
