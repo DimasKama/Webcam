@@ -39,19 +39,20 @@ Server config is located in `config/webcam/server.json` <p>
 Here are the default values with their descriptions: <p>
 ```
 {
-  "port": 25454, // Webcam UDP server port. This must not clash with Minecraft port (usually 25565) or any other (like Simple Voice Chat port)
-  "bind_address": "", // Address to bind server to. Leave blank to use server-ip property from the server.properties
-  "host": "", // The hostname that clients should use to connect to the Webcam server
-  "keep_alive_period": 1000, // Period of sending keep alive packets
+  "port": 25454,                 // Webcam UDP server port. This must not clash with Minecraft port (usually 25565) or any other (like Simple Voice Chat port)
+  "bind_address": "",            // Address to bind server to. Leave blank to use server-ip property from the server.properties
+  "host": "",                    // The hostname that clients should use to connect to the Webcam server
+  "keep_alive_period": 1000,     // Period of sending keep alive packets
   "max_display_distance": 100.0, // The distance in blocks from player, in which other players can see his webcam
-  "display_on_face": false, // Whether to display webcam on player model face or above his head
-  "display_shape": "round", // Shape of webcams displayed above players' head. Possible values: "round", "square"
-  "display_offset_y": 1.2, // Y offset of webcams displayed above players' head
-  "display_size": 1.2, // Size of webcams displayed above players' head
-  "hide_nicknames": true, // Whether to hide player's nickname if his webcam is enabled
-  "synced": { // These settings are synchronized with clients
-    "image_dimension": 360, // Side dimension of square webcam images. (High values may cause lags)
-    "mtu": 1300 // Maximum Transmission Unit of packets. You shouldn't change this
+  "display_on_face": false,      // Whether to display webcam on player model face or above his head
+  "display_shape": "round",      // Shape of webcams displayed above players' head. Possible values: "round", "square"
+  "display_offset_y": 1.2,       // Y offset of webcams displayed above players' head
+  "display_size": 1.2,           // Size of webcams displayed above players' head
+  "hide_nicknames": true,        // Whether to hide player's nickname if his webcam is enabled
+  "display_self_webcam": false,  // Whether to show the player's webcam to himself
+  "synced": {                    // These settings are synchronized with clients
+    "image_dimension": 360,      // Side dimension of square webcam images. (High values may cause lags)
+    "mtu": 1300                  // Maximum Transmission Unit of packets. You shouldn't change this
   }
 }
 ```
