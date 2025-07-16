@@ -18,11 +18,11 @@ public record SyncedServerConfig(
     public static final int MAX_MTU = 2048;
     public static final Codec<SyncedServerConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             defaultedField(Codec.intRange(MIN_IMAGE_DIMENSION, MAX_IMAGE_DIMENSION), "image_dimension", () -> 360).forGetter(SyncedServerConfig::imageDimension),
-            defaultedField(Codec.intRange(MIN_MTU, MAX_MTU), "mtu", () -> 1300).forGetter(SyncedServerConfig::mtu)
+            defaultedField(Codec.intRange(MIN_MTU, MAX_MTU), "mtu", () -> 1100).forGetter(SyncedServerConfig::mtu)
     ).apply(instance, SyncedServerConfig::new));
 
     public SyncedServerConfig() {
-        this(360, 1300);
+        this(360, 1100);
     }
 
     public SyncedServerConfig(ByteBuffer buffer) {

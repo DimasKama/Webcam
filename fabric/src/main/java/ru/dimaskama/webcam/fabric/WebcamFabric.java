@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -44,6 +45,19 @@ public class WebcamFabric implements ModInitializer {
                     if (serverPlayer != null) {
                         WebcamFabricMessaging.sendToPlayer(serverPlayer, message);
                     }
+                }
+            }
+
+            @Override
+            public void sendSystemMessage(UUID player, String message) {
+                MinecraftServer server = WebcamFabric.server;
+                if (server != null) {
+                    server.execute(() -> {
+                        ServerPlayer serverPlayer = server.getPlayerList().getPlayer(player);
+                        if (serverPlayer != null) {
+                            serverPlayer.sendSystemMessage(Component.literal(message));
+                        }
+                    });
                 }
             }
 
