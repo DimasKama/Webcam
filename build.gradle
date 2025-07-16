@@ -39,6 +39,6 @@ tasks.register('publishPluginsToHangar') {
 tasks.register('publishEverything') {
     group = 'webcam'
     doLast {
-        runGradleTasks(['clean'], ['fabric:modrinth', 'spigot:modrinth', 'spigot:publishAllPublicationsToHangar'])
+        runGradleTasks(['clean'], ['fabric:modrinth', 'spigot:modrinth', 'velocity:modrinth', 'spigot:publishAllPublicationsToHangar', 'velocity:publishAllPublicationsToHangar'])
     }
 }
