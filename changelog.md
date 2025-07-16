@@ -1,1 +1,3 @@
-- Add display_self_webcam server config field (default: false)
+- Update the protocol version. Mod is not compatible with v2.x.x now
+- Add Velocity Webcam proxy
+- Send the incompatible version message when the player joins with an incompatible version of the Webcam mod

@@ -96,6 +96,14 @@ public class WebcamSpigot extends JavaPlugin {
             }
 
             @Override
+            public void sendSystemMessage(UUID player, String message) {
+                Player serverPlayer = Bukkit.getPlayer(player);
+                if (serverPlayer != null) {
+                    serverPlayer.sendMessage(message);
+                }
+            }
+
+            @Override
             public void acceptForNearbyPlayers(UUID playerUuid, double maxDistance, Consumer<Set<UUID>> action) {
                 Player player = Bukkit.getPlayer(playerUuid);
                 if (player != null) {

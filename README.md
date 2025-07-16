@@ -1,16 +1,22 @@
 # Webcam
 
-Mod and plugin that allows players to broadcast their webcams <p>
+Mod and plugin that allows players to broadcast their webcams  
+
+### Downloads
+
+- [Fabric / Quilt](https://modrinth.com/mod/webcam-mod/versions?l=fabric)
+- [Bukkit / Spigot / Paper](https://modrinth.com/plugin/webcam-mod/versions?l=bukkit)
+- [Velocity](https://modrinth.com/mod/webcam-mod/versions?l=velocity)
 
 ![screenshot](images/screenshot.jpg)
 
 ## Warning
 
-This project is new and may not work well. Please submit an issue if you find a bug
+This project is new and may not work well. Please [**submit an issue**](https://github.com/DimasKama/Webcam/issues/new) if you find a bug
 
 ## Usage
 
-For the server, see `Setup on server`
+For the server, see `Setup on server` and `Setup on proxy`
 
 For the client, just put the mod in the `mods` directory with the Fabric API. The settings menu can be opened by hotkey (`C` by default)
 
@@ -31,18 +37,20 @@ Webcam connection is encrypted, but we don't guarantee the security of it. Use a
 
 ## Setup on server
 
-You need to open port on your server to make Webcam server work. This is port `25454`/`udp` by default. You can change the port in server config
+Webcam server works as a separate UDP server.  
+So you need to open port in your server's firewall and panel (if present) to make Webcam server work. This is port `25454/udp` by default. You can change the port in server config    
+If you are using Velocity, see `Setup on proxy`
 
-### Config
+### Server config
 
-Server config is located in `config/webcam/server.json` <p>
-Here are the default values with their descriptions: <p>
+Server config is located in `config/webcam/server.json`  
+Here are the default values with their descriptions:  
 ```
 {
-  "port": 25454,                 // Webcam UDP server port. This must not clash with Minecraft port (usually 25565) or any other (like Simple Voice Chat port)
-  "bind_address": "",            // Address to bind server to. Leave blank to use server-ip property from the server.properties
-  "host": "",                    // The hostname that clients should use to connect to the Webcam server
-  "keep_alive_period": 1000,     // Period of sending keep alive packets
+  "port": 25454,                 // Webcam UDP server port. This must not clash with any other used UDP port (like Simple Voice Chat port)
+  "bind_address": "",            // Address to bind the Webcam server to. Leave blank to use the wildcard (0.0.0.0) address. F.e. use "127.0.0.1" to accept only local connections
+  "host": "",                    // The hostname that clients should use to connect to the Webcam server. Leave blank to use the address, that player is connected to Minecraft with. Can be a simple address or an address with port. This will be ignored, if the server is proxied
+  "keep_alive_period": 1000,     // Period of sending keep alive packets is milliseconds
   "max_display_distance": 100.0, // The distance in blocks from player, in which other players can see his webcam
   "display_on_face": false,      // Whether to display webcam on player model face or above his head
   "display_shape": "round",      // Shape of webcams displayed above players' head. Possible values: "round", "square"
@@ -52,7 +60,10 @@ Here are the default values with their descriptions: <p>
   "display_self_webcam": false,  // Whether to show the player's webcam to himself
   "synced": {                    // These settings are synchronized with clients
     "image_dimension": 360,      // Side dimension of square webcam images. (High values may cause lags)
-    "mtu": 1300                  // Maximum Transmission Unit of packets. You shouldn't change this
+    "mtu": 1100                  // Maximum Transmission Unit of packets. You can lower this, if image on webcam starts look glitchy or not arrives at all
+  },
+  "messages": {                  // Custom transtalions for messages, that are sent to players in different situations. May contain placeholders - %s
+    "incompatible_mod_version": "Incompatible Webcam version. Your - %s, server's - %s" // The message that will be sent to player if he has incompatible Webcam mod version. You can set this to empty to disable sending this message
   }
 }
 ```
@@ -64,3 +75,26 @@ Here are the default values with their descriptions: <p>
 ### Permissions
 
 - `webcam.command.config` - permission to modify Webcam server config
+
+## Setup on proxy
+
+Webcam has Velocity plugin that proxies Webcam servers on the backend Minecraft servers and allows to connect to different servers with Webcam plugin through the single port.  
+So it acts like a UDP proxy.  
+If you running proxy and backend servers on the same machine, you need to configure different ports for them. See `Setup on server/Server config` and `Setup on proxy/Proxy config`  
+
+## Proxy config
+
+Server config is located in `plugins/webcam/config.properties`  
+Here are the default values with their descriptions:  
+```
+#Webcam proxy config
+
+# Webcam UDP server port. This must not clash with any other used UDP port (like Simple Voice Chat port)
+port=25454
+
+# Address to bind the Webcam server to. Leave blank to use the wildcard (0.0.0.0) address. F.e. use "127.0.0.1" to accept only local connections
+bind_address=
+
+# The hostname that clients should use to connect to the Webcam server. Leave blank to use the address, that player is connected to Minecraft with. Can be a simple address or an address with port. This will override configured values on backend server's
+host=
+```
