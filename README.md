@@ -82,7 +82,7 @@ Webcam has Velocity plugin that proxies Webcam servers on the backend MC servers
 So it acts like a UDP proxy.  
 If you running proxy and backend servers on the same machine, you need to configure different ports for them. See `Setup on server/Server config` and `Setup on proxy/Proxy config`  
 
-## Proxy config
+### Proxy config
 
 Server config is located in `plugins/webcam/config.properties`  
 Here are the default values with their descriptions:  
