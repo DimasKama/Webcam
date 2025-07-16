@@ -2,7 +2,7 @@
 
 Mod and plugin that allows players to broadcast their webcams  
 
-### Downloads
+## Downloads
 
 - [Fabric / Quilt](https://modrinth.com/mod/webcam-mod/versions?l=fabric)
 - [Bukkit / Spigot / Paper](https://modrinth.com/plugin/webcam-mod/versions?l=bukkit)
@@ -78,7 +78,7 @@ Here are the default values with their descriptions:
 
 ## Setup on proxy
 
-Webcam has Velocity plugin that proxies Webcam servers on the backend Minecraft servers and allows to connect to different servers with Webcam plugin through the single port.  
+Webcam has Velocity plugin that proxies Webcam servers on the backend MC servers and allows to connect to different Webcam servers through the single port.  
 So it acts like a UDP proxy.  
 If you running proxy and backend servers on the same machine, you need to configure different ports for them. See `Setup on server/Server config` and `Setup on proxy/Proxy config`  
 
