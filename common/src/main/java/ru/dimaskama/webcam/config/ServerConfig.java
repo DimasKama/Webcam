@@ -17,7 +17,8 @@ public record ServerConfig(
         float displaySize,
         boolean hideNicknames,
         boolean displaySelfWebcam,
-        SyncedServerConfig synced
+        SyncedServerConfig synced,
+        MessagesConfig messages
 ) {
 
     public static final double MIN_MAX_DISPLAY_DISTANCE = 5.0;
@@ -39,43 +40,44 @@ public record ServerConfig(
             defaultedField(Codec.floatRange(MIN_DISPLAY_SIZE, MAX_DISPLAY_SIZE), "display_size", () -> 1.2F).forGetter(ServerConfig::displaySize),
             defaultedField(Codec.BOOL, "hide_nicknames", () -> true).forGetter(ServerConfig::hideNicknames),
             defaultedField(Codec.BOOL, "display_self_webcam", () -> false).forGetter(ServerConfig::displaySelfWebcam),
-            defaultedField(SyncedServerConfig.CODEC, "synced", SyncedServerConfig::new).forGetter(ServerConfig::synced)
+            defaultedField(SyncedServerConfig.CODEC, "synced", SyncedServerConfig::new).forGetter(ServerConfig::synced),
+            defaultedField(MessagesConfig.CODEC, "messages", MessagesConfig::new).forGetter(ServerConfig::messages)
     ).apply(instance, ServerConfig::new));
 
     public ServerConfig() {
-        this(DEFAULT_PORT, "", "", 1000, 100.0, false, VideoDisplayShape.ROUND, 1.2F, 1.2F, true, false, new SyncedServerConfig());
+        this(DEFAULT_PORT, "", "", 1000, 100.0, false, VideoDisplayShape.ROUND, 1.2F, 1.2F, true, false, new SyncedServerConfig(), new MessagesConfig());
     }
 
     public ServerConfig withMaxDisplayDistance(double maxDisplayDistance) {
-        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced);
+        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced, messages);
     }
 
     public ServerConfig withDisplayOnFace(boolean displayOnFace) {
-        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced);
+        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced, messages);
     }
 
     public ServerConfig withDisplayShape(VideoDisplayShape displayShape) {
-        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced);
+        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced, messages);
     }
 
     public ServerConfig withDisplayOffsetY(float displayOffsetY) {
-        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced);
+        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced, messages);
     }
 
     public ServerConfig withDisplaySize(float displaySize) {
-        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced);
+        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced, messages);
     }
 
     public ServerConfig withHideNicknames(boolean hideNicknames) {
-        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced);
+        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced, messages);
     }
 
     public ServerConfig withDisplaySelfWebcam(boolean displaySelfWebcam) {
-        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced);
+        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced, messages);
     }
 
     public ServerConfig withSynced(SyncedServerConfig synced) {
-        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced);
+        return new ServerConfig(port, bindAddress, host, keepAlivePeriod, maxDisplayDistance, displayOnFace, displayShape, displayOffsetY, displaySize, hideNicknames, displaySelfWebcam, synced, messages);
     }
 
 }
