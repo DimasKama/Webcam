@@ -44,3 +44,5 @@ bin/
 /fabric/run/
 /common/run/
 /.idea/
+/velocity/build/
+/velocity/run/

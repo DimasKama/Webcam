@@ -25,7 +25,7 @@ tasks.register('publishPluginToModrinth') {
 tasks.register('publishAllToModrinth') {
     group = 'webcam'
     doLast {
-        runGradleTasks(['clean'], ['fabric:modrinth', 'spigot:modrinth'])
+        runGradleTasks(['clean'], ['fabric:modrinth', 'spigot:modrinth', 'velocity:modrinth'])
     }
 }
 
