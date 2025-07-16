@@ -27,6 +27,10 @@ public class ServerMessaging {
                 ));
             } else {
                 Webcam.getLogger().info("Client protocol version is incompatible. Not replying on secret request");
+                String msg = Webcam.SERVER_CONFIG.getData().messages().incompatibleModVersion();
+                if (!msg.isBlank()) {
+                    Webcam.getService().sendSystemMessage(playerUuid, String.format(msg, message.version(), Webcam.getVersion()));
+                }
             }
         }
     }

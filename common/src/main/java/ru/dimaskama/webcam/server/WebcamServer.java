@@ -124,7 +124,7 @@ public class WebcamServer extends Thread {
 
     public void send(PlayerState player, byte[] encrypted) {
         try {
-            socket.send(player.getSocketAddress(), S2CPacket.create(encrypted));
+            socket.send(player.getSocketAddress(), S2CPacket.create(player.getUuid(), encrypted));
         } catch (Exception e) {
             Webcam.getLogger().warn("Failed to send packet to " + player.getSocketAddress(), e);
         }
