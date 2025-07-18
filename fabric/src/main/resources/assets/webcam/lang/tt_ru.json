@@ -1,0 +1,23 @@
+{
+  "key.categories.webcam": "Webcam",
+  "key.webcam.open_menu": "Менюны ачу",
+  "modmenu.descriptionTranslation.webcam": "Minecraft'тагы камералар",
+  "webcam.screen.webcam": "Камера көйләүләре",
+  "webcam.screen.webcam.not_connected": "Webcam серверына тоташылмады",
+  "webcam.screen.webcam.webcam_enabled": "Камера кушылу: %s",
+  "webcam.screen.webcam.selected_device": "Җайланма: %s",
+  "webcam.screen.webcam.selected_device.none": "Юк",
+  "webcam.screen.webcam.update_devices": "Ирешерлек җайланмалар яңарту",
+  "webcam.screen.webcam.resolution": "Ачыклык: %s",
+  "webcam.screen.webcam.resolution.tooltip": "Җайланма ачыклыгы. Чын дисплей сыйфаты сервер көйләүләренә бәйле булган игътибар итегез.",
+  "webcam.screen.webcam.fps": "FPS чиге: %s",
+  "webcam.screen.webcam.fps.tooltip": "Югары FPS кыйммәте эшчәнлеккә йогынты ясарга мөмкин",
+  "webcam.screen.webcam.show_icons": "Тамгачыкларны күрсәтү: %s",
+  "webcam.screen.webcam.show_preview": "Алдан карау: %s",
+  "webcam.screen.webcam.show_preview.tooltip": "Бу менюны ачылганда хаталар булырга мөмкин",
+  "webcam.internal_error": "Webcam билгесез хатасы: %s",
+  "webcam.error.no_available": "Җайланмалар ирешерлеге түгел",
+  "webcam.error.device_unavailable": "%s җайланмасы ирешерлеге түгел",
+  "webcam.error.device_disconnected": "%s җайланмасы өзелде",
+  "webcam.error.encode_error": "Сурәт кодлау хатасы"
+}
