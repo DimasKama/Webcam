@@ -1,73 +1,97 @@
 package ru.dimaskama.webcam.server;
 
-import ru.dimaskama.webcam.Utils;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioDatagramChannel;
 import ru.dimaskama.webcam.Webcam;
+import ru.dimaskama.webcam.WebcamService;
 import ru.dimaskama.webcam.config.ServerConfig;
-import ru.dimaskama.webcam.config.SyncedServerConfig;
 import ru.dimaskama.webcam.net.*;
 import ru.dimaskama.webcam.net.packet.*;
 
 import javax.annotation.Nullable;
-import java.net.SocketAddress;
-import java.net.SocketException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousCloseException;
+import java.net.*;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
-public class WebcamServer extends Thread {
+public class WebcamServer extends SimpleChannelInboundHandler<C2SPacket> {
 
+    private static final AtomicInteger THREAD_COUNT = new AtomicInteger();
+    private static volatile EventLoopGroup eventLoopGroup;
     private static WebcamServer instance;
-    private final BlockingQueue<RawPacket> packetQueue = new LinkedBlockingQueue<>();
     private final Map<UUID, PlayerState> playerStateMap = new ConcurrentHashMap<>();
-    private final ServerWebcamSocket socket;
+    private final int port;
+    private final String address;
     private final String host;
     private final int keepAlivePeriod;
-    private final PacketProcessingThread packetProcessingThread = new PacketProcessingThread();
+    private final Channel channel;
+    private final KeepAliveThread keepAliveThread;
+    private int minecraftTickCount;
 
-    public WebcamServer(ServerWebcamSocket socket, String host, int keepAlivePeriod) {
-        this.socket = socket;
+    public WebcamServer(int port, String address, String host, int keepAlivePeriod) throws Exception {
+        this.port = port;
+        this.address = address.isEmpty() ? "0.0.0.0" : address;
         this.host = host;
         this.keepAlivePeriod = keepAlivePeriod;
-        setDaemon(true);
-        setName("WebcamServer");
-        setUncaughtExceptionHandler((t, e) -> Webcam.getLogger().error("Uncaught exception on WebcamServer thread", e));
+        if (eventLoopGroup == null) {
+            synchronized (WebcamServer.class) {
+                if (eventLoopGroup == null) {
+                    eventLoopGroup = new NioEventLoopGroup(r -> {
+                        Thread thread = new Thread(r, "Webcam Server #" + THREAD_COUNT.getAndIncrement());
+                        thread.setDaemon(true);
+                        return thread;
+                    });
+                }
+            }
+        }
+        channel = new Bootstrap()
+                .group(eventLoopGroup)
+                .channel(NioDatagramChannel.class)
+                .handler(new ChannelInitializer<>() {
+                    @Override
+                    protected void initChannel(Channel ch) {
+                        ChannelPipeline pipeline = ch.pipeline();
+                        pipeline.addLast("decrypt_decode_c2s", new DecryptDecodeInboundC2SHandler(WebcamServer.this));
+                        pipeline.addLast("packet_handler", WebcamServer.this);
+                        pipeline.addLast("encrypt_s2c", new EncryptOutboundS2CHandler());
+                        pipeline.addLast("encode_s2c", new EncodeOutboundS2CHandler());
+                    }
+                })
+                .bind(new InetSocketAddress(address.isEmpty() ? null : InetAddress.getByName(address), port))
+                .sync()
+                .channel();
+        keepAliveThread = new KeepAliveThread(this);
+        keepAliveThread.start();
     }
 
     public static void initialize(ServerConfig config) {
         shutdown();
-        ServerWebcamSocket socket = null;
-        try {
-            checkHost(config.host());
-            socket = new ServerWebcamSocket(config.port(), config.bindAddress());
-        } catch (Exception e) {
-            Webcam.getLogger().error("Socket opening error", e);
-        }
-        if (socket != null) {
-            WebcamServer server = instance = new WebcamServer(socket, config.host(), config.keepAlivePeriod());
-            server.start();
-            Webcam.getLogger().info("Webcam server started on port " + config.port());
-        } else {
-            Webcam.getLogger().error("Webcam server has not started due to errors!");
-        }
-    }
-
-    private static void checkHost(String host) throws Exception {
+        String host = config.host();
         if (!host.isEmpty()) {
             try {
                 new URI("webcam://" + host);
                 Webcam.getLogger().info("Webcam host is \"" + host + "\"");
             } catch (URISyntaxException e) {
                 Webcam.getLogger().warn("Failed to parse Webcam host", e);
-                throw e;
+                host = "";
             }
+        }
+        try {
+            int port = config.port();
+            String address = config.bindAddress();
+            int keepAlivePeriod = config.keepAlivePeriod();
+            WebcamServer server = instance = new WebcamServer(port, address, host, keepAlivePeriod);
+            Webcam.getLogger().info("Webcam server started on " + server.address + ":" + server.port + (host.isEmpty() ? "" : ". Host: " + host));
+        } catch (Exception e) {
+            Webcam.getLogger().warn("Failed to open Webcam server", e);
         }
     }
 
@@ -79,7 +103,7 @@ public class WebcamServer extends Thread {
                 server.close();
                 Webcam.getLogger().info("Webcam server closed");
             } catch (Exception e) {
-                Webcam.getLogger().error("Server shutdown error", e);
+                Webcam.getLogger().error("Webcam server close error", e);
             }
         }
     }
@@ -89,8 +113,8 @@ public class WebcamServer extends Thread {
         return instance;
     }
 
-    public ServerWebcamSocket getSocket() {
-        return socket;
+    public int getPort() {
+        return port;
     }
 
     public int getKeepAlivePeriod() {
@@ -101,8 +125,8 @@ public class WebcamServer extends Thread {
         return host;
     }
 
-    public PlayerState getOrCreatePlayerState(UUID playerUuid) {
-        return playerStateMap.computeIfAbsent(playerUuid, PlayerState::new);
+    public PlayerState getOrCreatePlayerState(UUID playerUuid, String playerName) {
+        return playerStateMap.computeIfAbsent(playerUuid, u -> new PlayerState(u, playerName));
     }
 
     @Nullable
@@ -114,184 +138,194 @@ public class WebcamServer extends Thread {
         playerStateMap.remove(playerUuid);
     }
 
-    public void send(PlayerState player, Packet packet) {
+    public void send(PlayerState target, Packet packet) {
+        send(new S2CPacket(target, packet));
+    }
+
+    public void send(S2CPacket packet) {
+        channel.writeAndFlush(packet);
+    }
+
+    public void sendBatching(PlayerState target, Packet packet) {
+        sendBatching(new S2CPacket(target, packet));
+    }
+
+    public void sendBatching(S2CPacket packet) {
+        channel.write(packet);
+    }
+
+    public void sendBatching(S2CEncodedPacket packet) {
+        channel.write(packet);
+    }
+
+    public void flushChannel() {
+        channel.flush();
+    }
+
+    public void broadcast(Packet packet) {
+        broadcastNoRelease(Unpooled.buffer(packet.getEstimatedSizeWithId()), packet, p -> true);
+    }
+
+    private void broadcastNoRelease(ByteBuf buf, Packet packet, Predicate<PlayerState> filter) {
+        packet.encodeWithId(buf);
+        playerStateMap.values().forEach(p -> {
+            if (p.isAuthenticated() && filter.test(p)) {
+                sendBatching(new S2CEncodedPacket(p, buf.retainedDuplicate()));
+            }
+        });
+        flushChannel();
+    }
+
+    private void broadcastVideoNearby(UUID player, ByteBuf buf, Packet packet, double maxDist, boolean includeSelf, boolean force) {
         try {
-            send(player, packet.encrypt(player.getSecret()));
-        } catch (Exception e) {
-            Webcam.getLogger().warn("Failed to encrypt packet " + packet + " to " + player.getUuid(), e);
+            Webcam.getService().acceptForNearbyPlayers(
+                    player,
+                    maxDist,
+                    players -> broadcastNoRelease(buf, packet, p ->
+                            (force || (p.hasViewPermission() && p.canShowWebcams() && !p.isSourceBlocked(player)))
+                            && players.contains(p.getUuid())
+                            && (includeSelf || !p.getUuid().equals(player)))
+            );
+        } finally {
+            buf.release();
         }
     }
 
-    public void send(PlayerState player, byte[] encrypted) {
-        try {
-            socket.send(player.getSocketAddress(), S2CPacket.create(player.getUuid(), encrypted));
-        } catch (Exception e) {
-            Webcam.getLogger().warn("Failed to send packet to " + player.getSocketAddress(), e);
-        }
-    }
-
-    public void broadcast(Packet packet, Predicate<PlayerState> playerStatePredicate) {
-        byte[] tempBuf = Utils.TEMP_BUFFERS.get();
-        ByteBuffer buffer = ByteBuffer.wrap(tempBuf);
-        buffer.put(packet.getType().getId());
-        packet.writeBytes(buffer);
-        int len = buffer.position();
-        playerStateMap.values().stream().filter(playerStatePredicate).forEach(p -> {
-            if (p.isAuthenticated()) {
-                try {
-                    send(p, Encryption.encrypt(tempBuf, 0, len, p.getSecret()));
-                } catch (Exception e) {
-                    Webcam.getLogger().warn("Failed to encrypt packet " + packet + " to " + p.getUuid(), e);
+    public void sendKeepAlives() {
+        long time = System.currentTimeMillis();
+        long max = keepAlivePeriod * 10L;
+        ByteBuf unpooledBuf = Unpooled.buffer(KeepAlivePacket.INSTANCE.getEstimatedSizeWithId());
+        KeepAlivePacket.INSTANCE.encodeWithId(unpooledBuf);
+        playerStateMap.values().forEach(player -> {
+            if (player.isAuthenticated()) {
+                if ((time - player.getLastKeepAlive()) > max) {
+                    player.setAuthenticated(false);
+                    Webcam.getLogger().info(player.getName() + " timed out");
+                } else {
+                    sendBatching(new S2CEncodedPacket(player, unpooledBuf.retainedDuplicate()));
                 }
             }
         });
-    }
-
-    public void broadcastNearby(UUID player, Packet packet, double maxDist, boolean includeSelf) {
-        Webcam.getService().acceptForNearbyPlayers(
-                player,
-                maxDist,
-                players -> broadcast(packet, p -> players.contains(p.getUuid()) && (includeSelf || !p.getUuid().equals(player)))
-        );
-    }
-
-    public void broadcastConfig(SyncedServerConfig config) {
-        ServerConfigPacket packet = new ServerConfigPacket(config);
-        playerStateMap.values().forEach(p -> send(p, packet));
-    }
-
-    @Override
-    public void run() {
-        packetProcessingThread.start();
-        while (!socket.isClosed()) {
-            try {
-                packetQueue.add(socket.read());
-            } catch (Exception e) {
-                if (!(e instanceof SocketException && e.getCause() instanceof AsynchronousCloseException)) {
-                    Webcam.getLogger().error("Socket read error", e);
-                }
-            }
-        }
-        try {
-            packetProcessingThread.join(100L);
-        } catch (InterruptedException ignored) {}
-    }
-
-    public boolean isClosed() {
-        return socket.isClosed();
+        flushChannel();
     }
 
     public void close() {
-        socket.close();
+        try {
+            channel.close().sync();
+        } catch (Exception e) {
+            Webcam.getLogger().error("Failed to close Webcam server channel", e);
+        }
+        keepAliveThread.interrupt();
     }
 
-    private class PacketProcessingThread extends Thread {
-
-        public PacketProcessingThread() {
-            setDaemon(true);
-            setName("WebcamPacketProcessingThread");
-            setUncaughtExceptionHandler((t, e) -> Webcam.getLogger().error("Uncaught exception on WebcamPacketProcessingThread", e));
+    public void minecraftTick() {
+        if ((minecraftTickCount++ % Webcam.getServerConfig().getData().permissionCheckPeriod()) == 0L) {
+            WebcamService service = Webcam.getService();
+            playerStateMap.values().forEach(p -> updatePermissions(service, p));
         }
+    }
 
-        @Override
-        public void run() {
-            long lastKeepAliveSent = 0L;
-            while (!isClosed()) {
-                long time = System.currentTimeMillis();
-                try {
-                    RawPacket rawPacket = packetQueue.poll(10L, TimeUnit.MILLISECONDS);
-                    if (rawPacket != null) {
-                        C2SPacket c2SPacket = null;
-                        try {
-                            c2SPacket = C2SPacket.decrypt(WebcamServer.this, rawPacket.data());
-                            PlayerState sender = c2SPacket.sender();
-                            SocketAddress lastSocketAddress = sender.getSocketAddress();
-                            if (lastSocketAddress == null) {
-                                sender.setSocketAddress(rawPacket.address());
-                            } else if (!lastSocketAddress.equals(rawPacket.address())) {
-                                throw new IllegalArgumentException("Same player but different address");
-                            }
-                        } catch (Exception e) {
-                            if (Webcam.isDebugMode()) {
-                                Webcam.getLogger().warn("Ignoring invalid packet from " + rawPacket.address(), e);
-                            }
-                        }
-                        if (c2SPacket != null) {
-                            if (time - rawPacket.timestamp() <= c2SPacket.packet().getType().getTTL()) {
-                                handlePacket(rawPacket.timestamp(), c2SPacket);
-                            } else {
-                                if (Webcam.isDebugMode()) {
-                                    Webcam.getLogger().warn("Dropping packets! Is server overloaded?");
-                                }
-                            }
-                        }
-                    }
-                } catch (Exception e) {
-                    Webcam.getLogger().error("Error processing packet on server", e);
-                }
-                if (time - lastKeepAliveSent >= keepAlivePeriod) {
-                    playerStateMap.values().removeIf(playerState -> {
-                        if (time - playerState.getLastKeepAlive() > 10L * keepAlivePeriod) {
-                            Webcam.getLogger().info(playerState.getUuid() + " timed out");
-                            return true;
-                        }
-                        if (playerState.isAuthenticated()) {
-                            send(playerState, KeepAlivePacket.INSTANCE);
-                        }
-                        return false;
-                    });
-                    lastKeepAliveSent = time;
-                }
-            }
+    private void updatePermissions(WebcamService service, PlayerState player) {
+        boolean broadcast = service.checkPermission(player.getUuid(), Webcam.WEBCAM_BROADCAST_PERMISSION, true);
+        boolean view = service.checkPermission(player.getUuid(), Webcam.WEBCAM_VIEW_PERMISSION, true);
+        boolean prevBroadcast = player.updateBroadcastPermission(broadcast);
+        boolean prevView = player.updateViewPermission(view);
+        if (broadcast != prevBroadcast || view != prevView) {
+            send(player, new PermissionsS2CPacket(broadcast, view));
         }
+    }
 
-        private void handlePacket(long timestamp, C2SPacket packet) {
-            if (packet.packet() instanceof AuthPacket(UUID playerUuid, UUID secret)) {
-                if (playerUuid.equals(packet.sender().getUuid()) && secret.equals(packet.sender().getSecret())) {
-                    if (!packet.sender().isAuthenticated()) {
-                        packet.sender().setAuthenticated(true);
-                        Webcam.getLogger().info("Successfully authenticated " + playerUuid);
-                    } else {
-                        Webcam.getLogger().warn(packet.sender().getUuid() + " sent duplicate auth packet");
-                    }
-                    send(packet.sender(), new ServerConfigPacket(Webcam.SERVER_CONFIG.getData().synced()));
-                    send(packet.sender(), AuthAckPacket.INSTANCE);
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, C2SPacket msg) {
+        PlayerState sender = msg.sender();
+        Packet packet = msg.packet();
+        if (packet instanceof AuthPacket(UUID playerUuid, UUID secret)) {
+            if (playerUuid.equals(sender.getUuid()) && secret.equals(sender.getSecret())) {
+                if (!sender.isAuthenticated()) {
+                    updatePermissions(Webcam.getService(), sender);
+                    sender.setAuthenticated(true);
+                    Webcam.getLogger().info("Successfully authenticated " + sender.getName());
                 } else {
-                    Webcam.getLogger().warn(packet.sender().getUuid() + " sent invalid auth packet");
+                    Webcam.getLogger().warn(sender.getName() + " sent duplicate auth packet");
                 }
-                return;
+
+                {
+                    KnownSourcesS2CPacket addPlayerPacket = new KnownSourcesS2CPacket(List.of(new KnownSource(playerUuid, sender.getName())));
+                    ByteBuf addPlayerPacketBuf = ctx.alloc().buffer(addPlayerPacket.getEstimatedSizeWithId());
+                    try {
+                        broadcastNoRelease(addPlayerPacketBuf, addPlayerPacket, p -> p != sender);
+                    } finally {
+                        addPlayerPacketBuf.release();
+                    }
+                }
+
+                sendBatching(sender, new ServerConfigPacket(Webcam.getServerConfig().getData().synced()));
+                sendBatching(sender, new PermissionsS2CPacket(sender.hasBroadcastPermission(), sender.hasViewPermission()));
+                sendBatching(sender, AuthAckPacket.INSTANCE);
+
+                flushChannel();
+
+                int mtu = Webcam.getServerConfig().getData().synced().mtu();
+                Iterator<KnownSource> playerSources = playerStateMap.values()
+                        .stream()
+                        .filter(PlayerState::isAuthenticated)
+                        .map(p -> new KnownSource(p.getUuid(), p.getName()))
+                        .iterator();
+                for (KnownSourcesS2CPacket sourceListPacket : KnownSourcesS2CPacket.split(mtu, playerSources)) {
+                    sendBatching(sender, sourceListPacket);
+                }
+
+                flushChannel();
+
+            } else {
+                Webcam.getLogger().warn(sender.getName() + " sent invalid auth packet");
             }
-            if (!packet.sender().isAuthenticated()) {
-                return;
-            }
-            if (packet.packet() instanceof KeepAlivePacket) {
-                packet.sender().setLastKeepAlive(timestamp);
-                return;
-            }
-            if (packet.packet() instanceof FrameChunkC2SPacket(FrameChunk chunk)) {
-                // Filter unexpected packets
-                if (packet.sender().onFrameChunk(chunk)) {
-                    UUID uuid = packet.sender().getUuid();
-                    ServerConfig config = Webcam.SERVER_CONFIG.getData();
+            return;
+        }
+        if (!sender.isAuthenticated()) {
+            throw new IllegalStateException(sender.getName() + " sent a packet without authenticating");
+        }
+        switch (packet) {
+            case KeepAlivePacket ignored ->
+                    sender.setLastKeepAlive(System.currentTimeMillis());
+            case VideoC2SPacket(NalUnit nal) -> {
+                if (sender.hasBroadcastPermission()) {
+                    UUID uuid = sender.getUuid();
+                    ServerConfig config = Webcam.getServerConfig().getData();
                     double maxDistance = config.maxDisplayDistance();
-                    FrameChunkS2CPacket chunkS2C = new FrameChunkS2CPacket(
+                    VideoS2CPacket videoPacket = new VideoS2CPacket(
                             config.displayOnFace()
                                     ? new VideoSource.Face(uuid, maxDistance)
                                     : new VideoSource.AboveHead(uuid, maxDistance, config.displayShape(), config.displayOffsetY(), config.displaySize(), config.hideNicknames(), null),
-                            chunk
+                            nal
                     );
                     boolean includeSelf = config.displaySelfWebcam();
-                    broadcastNearby(uuid, chunkS2C, maxDistance, includeSelf);
+                    broadcastVideoNearby(uuid, ctx.alloc().buffer(videoPacket.getEstimatedSizeWithId()), videoPacket, maxDistance, includeSelf, false);
+                } else {
+                    send(sender, new PermissionsS2CPacket(false, sender.hasViewPermission()));
                 }
-                return;
             }
-            if (packet.packet() instanceof CloseSourceC2SPacket) {
-                UUID uuid = packet.sender().getUuid();
-                boolean includeSelf = Webcam.SERVER_CONFIG.getData().displaySelfWebcam();
-                broadcastNearby(uuid, new CloseSourceS2CPacket(uuid), Webcam.SERVER_CONFIG.getData().maxDisplayDistance(), includeSelf);
+            case CloseSourceC2SPacket ignored -> {
+                UUID uuid = sender.getUuid();
+                boolean includeSelf = Webcam.getServerConfig().getData().displaySelfWebcam();
+                CloseSourceS2CPacket reply = new CloseSourceS2CPacket(uuid);
+                broadcastVideoNearby(uuid, ctx.alloc().buffer(reply.getEstimatedSizeWithId()), reply, Webcam.getServerConfig().getData().maxDisplayDistance(), includeSelf, true);
             }
+            case ShowWebcamsC2SPacket(boolean showWebcams) ->
+                    sender.setShowWebcams(showWebcams);
+            case AddBlockedSourceC2SPacket(UUID uuid) ->
+                    sender.addBlockedSource(uuid);
+            case RemoveBlockedSourceC2SPacket(UUID uuid) ->
+                    sender.removeBlockedSource(uuid);
+            default -> throw new IllegalStateException("Can't handle packet " + packet + " from " + sender.getName());
         }
+    }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        if (Webcam.isDebugMode()) {
+            Webcam.getLogger().warn("Failed to handle packet from client", cause);
+        }
     }
 
 }

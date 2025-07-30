@@ -1,9 +1,8 @@
 package ru.dimaskama.webcam.velocity;
 
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.UUID;
 
 public final class ProxyBridge {
@@ -11,7 +10,7 @@ public final class ProxyBridge {
     private final UUID playerUuid;
     private final InetSocketAddress serverAddress;
     @Nullable
-    private SocketAddress playerAddress;
+    private InetSocketAddress playerAddress;
     private boolean addressLocked;
 
     public ProxyBridge(UUID playerUuid, InetSocketAddress serverAddress) {
@@ -28,11 +27,11 @@ public final class ProxyBridge {
     }
 
     @Nullable
-    public SocketAddress getPlayerAddress() {
+    public InetSocketAddress getPlayerAddress() {
         return playerAddress;
     }
 
-    public void updatePlayerAddress(SocketAddress playerAddress) {
+    public void updatePlayerAddress(InetSocketAddress playerAddress) {
         if (!addressLocked) {
             this.playerAddress = playerAddress;
         }

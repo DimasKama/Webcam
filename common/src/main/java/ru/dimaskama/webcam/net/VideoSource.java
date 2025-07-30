@@ -1,5 +1,6 @@
 package ru.dimaskama.webcam.net;
 
+import io.netty.buffer.ByteBuf;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
 import org.joml.Vector3d;
@@ -7,7 +8,6 @@ import org.joml.Vector3dc;
 import ru.dimaskama.webcam.config.VideoDisplayShape;
 
 import javax.annotation.Nullable;
-import java.nio.ByteBuffer;
 import java.util.UUID;
 
 public abstract class VideoSource {
@@ -20,8 +20,8 @@ public abstract class VideoSource {
         this.maxDistance = maxDistance;
     }
 
-    protected VideoSource(ByteBuffer buffer) {
-        this(new UUID(buffer.getLong(), buffer.getLong()), buffer.getDouble());
+    protected VideoSource(ByteBuf buf) {
+        this(new UUID(buf.readLong(), buf.readLong()), buf.readDouble());
     }
 
     public UUID getUuid() {
@@ -32,40 +32,42 @@ public abstract class VideoSource {
         return maxDistance;
     }
 
-    public static VideoSource fromBytes(ByteBuffer buffer) {
-        byte code = buffer.get();
+    public static VideoSource fromBytes(ByteBuf buf) {
+        byte code = buf.readByte();
         if (code == Face.CODE) {
-            return new Face(buffer);
+            return new Face(buf);
         }
         if (code == AboveHead.CODE) {
-            return new AboveHead(buffer);
+            return new AboveHead(buf);
         }
         if (code == Custom.CODE) {
-            return new Custom(buffer);
+            return new Custom(buf);
         }
         throw new IllegalArgumentException("Unknown VideoSource code: " + code);
     }
 
-    public void writeBytes(ByteBuffer buffer) {
-        buffer.put(getCode());
-        buffer.putLong(uuid.getMostSignificantBits()).putLong(uuid.getLeastSignificantBits());
-        buffer.putDouble(maxDistance);
+    public void writeBytes(ByteBuf buf) {
+        buf.writeByte(getCode());
+        buf.writeLong(uuid.getMostSignificantBits()).writeLong(uuid.getLeastSignificantBits());
+        buf.writeDouble(maxDistance);
     }
+
+    public abstract int getEstimatedSize();
 
     protected abstract byte getCode();
 
     @Nullable
-    protected static Vector2fc readCustomRotation(ByteBuffer buffer) {
-        return buffer.get() != 0 ? new Vector2f(buffer.getFloat(), buffer.getFloat()) : null;
+    protected static Vector2fc readCustomRotation(ByteBuf buf) {
+        return buf.readBoolean() ? new Vector2f(buf.readFloat(), buf.readFloat()) : null;
     }
 
-    protected static void writeCustomRotation(ByteBuffer buffer, @Nullable Vector2fc customRotation) {
+    protected static void writeCustomRotation(ByteBuf buf, @Nullable Vector2fc customRotation) {
         if (customRotation != null) {
-            buffer.put((byte) 1)
-                    .putFloat(customRotation.x())
-                    .putFloat(customRotation.y());
+            buf.writeBoolean(true)
+                    .writeFloat(customRotation.x())
+                    .writeFloat(customRotation.y());
         } else {
-            buffer.put((byte) 0);
+            buf.writeBoolean(false);
         }
     }
 
@@ -77,13 +79,18 @@ public abstract class VideoSource {
             super(uuid, maxDistance);
         }
 
-        public Face(ByteBuffer buffer) {
-            super(buffer);
+        public Face(ByteBuf buf) {
+            super(buf);
         }
 
         @Override
-        public void writeBytes(ByteBuffer buffer) {
-            super.writeBytes(buffer);
+        public void writeBytes(ByteBuf buf) {
+            super.writeBytes(buf);
+        }
+
+        @Override
+        public int getEstimatedSize() {
+            return 25;
         }
 
         @Override
@@ -112,23 +119,28 @@ public abstract class VideoSource {
             this.customRotation = customRotation;
         }
 
-        public AboveHead(ByteBuffer buffer) {
-            super(buffer);
-            this.shape = VideoDisplayShape.byCode(buffer.get());
-            this.offsetY = buffer.getFloat();
-            this.size = buffer.getFloat();
-            this.hideNickname = buffer.get() != 0;
-            this.customRotation = readCustomRotation(buffer);
+        public AboveHead(ByteBuf buf) {
+            super(buf);
+            this.shape = VideoDisplayShape.byCode(buf.readByte());
+            this.offsetY = buf.readFloat();
+            this.size = buf.readFloat();
+            this.hideNickname = buf.readBoolean();
+            this.customRotation = readCustomRotation(buf);
         }
 
         @Override
-        public void writeBytes(ByteBuffer buffer) {
-            super.writeBytes(buffer);
-            buffer.put(shape.code)
-                    .putFloat(offsetY)
-                    .putFloat(size)
-                    .put(hideNickname ? (byte) 1 : (byte) 0);
-            writeCustomRotation(buffer, customRotation);
+        public void writeBytes(ByteBuf buf) {
+            super.writeBytes(buf);
+            buf.writeByte(shape.code)
+                    .writeFloat(offsetY)
+                    .writeFloat(size)
+                    .writeBoolean(hideNickname);
+            writeCustomRotation(buf, customRotation);
+        }
+
+        @Override
+        public int getEstimatedSize() {
+            return 36 + (customRotation != null ? 8 : 0);
         }
 
         @Override
@@ -178,23 +190,28 @@ public abstract class VideoSource {
             this.customRotation = customRotation;
         }
 
-        public Custom(ByteBuffer buffer) {
-            super(buffer);
-            this.pos = new Vector3d(buffer.getDouble(), buffer.getDouble(), buffer.getDouble());
-            this.width = buffer.getFloat();
-            this.height = buffer.getFloat();
-            this.shape = VideoDisplayShape.byCode(buffer.get());
-            this.customRotation = readCustomRotation(buffer);
+        public Custom(ByteBuf buf) {
+            super(buf);
+            this.pos = new Vector3d(buf.readDouble(), buf.readDouble(), buf.readDouble());
+            this.width = buf.readFloat();
+            this.height = buf.readFloat();
+            this.shape = VideoDisplayShape.byCode(buf.readByte());
+            this.customRotation = readCustomRotation(buf);
         }
 
         @Override
-        public void writeBytes(ByteBuffer buffer) {
-            super.writeBytes(buffer);
-            buffer.putDouble(pos.x()).putDouble(pos.y()).putDouble(pos.z())
-                    .putFloat(width)
-                    .putFloat(height)
-                    .put(shape.code);
-            writeCustomRotation(buffer, customRotation);
+        public void writeBytes(ByteBuf buf) {
+            super.writeBytes(buf);
+            buf.writeDouble(pos.x()).writeDouble(pos.y()).writeDouble(pos.z())
+                    .writeFloat(width)
+                    .writeFloat(height)
+                    .writeByte(shape.code);
+            writeCustomRotation(buf, customRotation);
+        }
+
+        @Override
+        public int getEstimatedSize() {
+            return 59 + (customRotation != null ? 8 : 0);
         }
 
         @Override
