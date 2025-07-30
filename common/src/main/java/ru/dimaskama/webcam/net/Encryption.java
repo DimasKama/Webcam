@@ -1,7 +1,10 @@
 package ru.dimaskama.webcam.net;
 
+import io.netty.buffer.ByteBuf;
+
 import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
@@ -9,47 +12,43 @@ import java.util.UUID;
 
 public class Encryption {
 
-    private static final SecureRandom RANDOM = new SecureRandom();
-    private static final String CIPHER = "AES/CBC/PKCS5Padding";
+    private static final int IV_LENGTH = 12;
+    private static final int TAG_LENGTH_BIT = 128;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-    public static byte[] getBytesFromUUID(UUID uuid) {
-        ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
+    public static SecretKey uuidToKey(UUID uuid) {
+        ByteBuffer buffer = ByteBuffer.allocate(16);
         buffer.putLong(uuid.getMostSignificantBits());
         buffer.putLong(uuid.getLeastSignificantBits());
-        return buffer.array();
+        return new SecretKeySpec(buffer.array(), "AES");
     }
 
-    private static byte[] generateIV() {
-        byte[] iv = new byte[16];
-        RANDOM.nextBytes(iv);
-        return iv;
-    }
-
-    private static SecretKeySpec createKeySpec(UUID secret) {
-        return new SecretKeySpec(getBytesFromUUID(secret), "AES");
-    }
-
-    public static byte[] encrypt(byte[] data, int start, int len, UUID secret) throws Exception {
-        byte[] iv = generateIV();
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        Cipher cipher = Cipher.getInstance(CIPHER);
-        cipher.init(Cipher.ENCRYPT_MODE, createKeySpec(secret), ivSpec);
-        byte[] enc = cipher.doFinal(data, start, len);
-        byte[] payload = new byte[iv.length + enc.length];
-        System.arraycopy(iv, 0, payload, 0, iv.length);
-        System.arraycopy(enc, 0, payload, iv.length, enc.length);
+    public static byte[] encrypt(byte[] data, int offset, int length, SecretKey secretKey) throws Exception {
+        byte[] iv = new byte[IV_LENGTH];
+        SECURE_RANDOM.nextBytes(iv);
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        GCMParameterSpec spec = new GCMParameterSpec(TAG_LENGTH_BIT, iv);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, spec);
+        byte[] cipherText = cipher.doFinal(data, offset, length);
+        byte[] payload = new byte[IV_LENGTH + cipherText.length];
+        System.arraycopy(iv, 0, payload, 0, IV_LENGTH);
+        System.arraycopy(cipherText, 0, payload, IV_LENGTH, cipherText.length);
         return payload;
     }
 
-    public static byte[] decrypt(byte[] payload, int start, int len, UUID secret) throws Exception {
-        byte[] iv = new byte[16];
-        System.arraycopy(payload, start, iv, 0, iv.length);
-        byte[] data = new byte[len - iv.length];
-        System.arraycopy(payload, start + iv.length, data, 0, data.length);
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        Cipher cipher = Cipher.getInstance(CIPHER);
-        cipher.init(Cipher.DECRYPT_MODE, createKeySpec(secret), ivSpec);
-        return cipher.doFinal(data);
+    public static byte[] decrypt(ByteBuf buf, SecretKey secretKey) throws Exception {
+        byte[] iv = new byte[IV_LENGTH];
+        buf.readBytes(iv);
+        byte[] cipherText = new byte[buf.readableBytes()];
+        buf.readBytes(cipherText);
+        return decrypt(iv, cipherText, secretKey);
+    }
+
+    private static byte[] decrypt(byte[] iv, byte[] cipherText, SecretKey secretKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        GCMParameterSpec spec = new GCMParameterSpec(TAG_LENGTH_BIT, iv);
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, spec);
+        return cipher.doFinal(cipherText);
     }
 
 }

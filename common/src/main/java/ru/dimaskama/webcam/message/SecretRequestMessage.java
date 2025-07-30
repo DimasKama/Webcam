@@ -1,18 +1,18 @@
 package ru.dimaskama.webcam.message;
 
-import java.nio.ByteBuffer;
+import io.netty.buffer.ByteBuf;
 
 public record SecretRequestMessage(
         String version
 ) implements Message {
 
-    public SecretRequestMessage(ByteBuffer buffer) {
-        this(BufferUtils.readUtf8(buffer));
+    public SecretRequestMessage(ByteBuf buf) {
+        this(BufUtils.readUtf8(buf));
     }
 
     @Override
-    public void writeBytes(ByteBuffer buffer) {
-        BufferUtils.writeUtf8(buffer, version);
+    public void writeBytes(ByteBuf buf) {
+        BufUtils.writeUtf8(buf, version);
     }
 
     @Override

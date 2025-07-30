@@ -7,35 +7,46 @@ import ru.dimaskama.webcam.logger.AbstractLogger;
 import ru.dimaskama.webcam.logger.StdoutLogger;
 import ru.dimaskama.webcam.message.ServerMessaging;
 
+import java.nio.file.Path;
+
 public final class Webcam {
 
-    public static final JsonConfig<CommonConfig> COMMON_CONFIG = new JsonConfig<>(
-            "config/webcam/common.json",
-            CommonConfig.CODEC,
-            CommonConfig::new
-    );
-    public static final JsonConfig<ServerConfig> SERVER_CONFIG = new JsonConfig<>(
-            "config/webcam/server.json",
-            ServerConfig.CODEC,
-            ServerConfig::new
-    );
     public static final String MOD_ID = "webcam";
     public static final String WEBCAMCONFIG_COMMAND_PERMISSION = "webcam.command.config";
+    public static final String WEBCAM_BROADCAST_PERMISSION = "webcam.broadcast";
+    public static final String WEBCAM_VIEW_PERMISSION = "webcam.view";
     private static String version;
     private static int protocolVersion;
     private static AbstractLogger logger = new StdoutLogger();
     private static WebcamService service;
+    private static JsonConfig<ServerConfig> serverConfig = new JsonConfig<>(
+            "config/webcam/server.json",
+            ServerConfig.CODEC,
+            ServerConfig::new
+    );
+    private static boolean debugMode;
 
     public static void initLogger(AbstractLogger logger) {
         Webcam.logger = logger;
     }
 
-    public static void init(String version, WebcamService service) {
+    public static void init(String version, Path configDir, WebcamService service) {
         Webcam.version = version;
         protocolVersion = getProtocolVersion(version);
         Webcam.service = service;
+        JsonConfig<CommonConfig> commonConfig = new JsonConfig<>(
+                configDir.resolve("common.json").toString(),
+                CommonConfig.CODEC,
+                CommonConfig::new
+        );
+        serverConfig = new JsonConfig<>(
+                configDir.resolve("server.json").toString(),
+                ServerConfig.CODEC,
+                ServerConfig::new
+        );
+        commonConfig.loadOrCreate();
+        debugMode = commonConfig.getData().debugMode();
         ServerMessaging.init();
-        COMMON_CONFIG.loadOrCreate();
     }
 
     public static String getVersion() {
@@ -48,6 +59,10 @@ public final class Webcam {
 
     public static WebcamService getService() {
         return service;
+    }
+
+    public static JsonConfig<ServerConfig> getServerConfig() {
+        return serverConfig;
     }
 
     public static boolean isClientVersionCompatible(String version) {
@@ -66,7 +81,7 @@ public final class Webcam {
     }
 
     public static boolean isDebugMode() {
-        return COMMON_CONFIG.getData().debugMode();
+        return debugMode;
     }
 
 }

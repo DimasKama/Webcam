@@ -1,6 +1,7 @@
 name: webcam
 version: ${version}
 main: ru.dimaskama.webcam.spigot.WebcamSpigot
+api-version: 1.21
 description: Webcams in Minecraft
 author: DimasKama
 commands:
@@ -12,4 +13,10 @@ commands:
 permissions:
   webcam.command.config:
     default: op
-    description: "Allows you to modify Webcam server config"
+    description: "Allows to modify Webcam server config"
+  webcam.broadcast:
+    default: true
+    description: "Allows to broadcast webcam"
+  webcam.view:
+    default: true
+    description: "Allows to view players' webcams"

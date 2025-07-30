@@ -14,20 +14,20 @@ public class ServerMessaging {
         service.registerChannel(Channel.SECRET, null);
     }
 
-    private static void onSecretRequest(UUID playerUuid, SecretRequestMessage message) {
+    private static void onSecretRequest(UUID playerUuid, String playerName, SecretRequestMessage message) {
         WebcamServer server = WebcamServer.getInstance();
-        if (server != null && !server.isClosed()) {
+        if (server != null) {
             if (Webcam.isClientVersionCompatible(message.version())) {
-                Webcam.getLogger().info("Sending secret to " + playerUuid);
+                Webcam.getLogger().info("Sending secret to " + playerName);
                 Webcam.getService().sendToPlayer(playerUuid, new SecretMessage(
-                        server.getOrCreatePlayerState(playerUuid).getSecret(),
-                        server.getSocket().getPort(),
+                        server.getOrCreatePlayerState(playerUuid, playerName).getSecret(),
+                        server.getPort(),
                         server.getKeepAlivePeriod(),
                         server.getHost()
                 ));
             } else {
                 Webcam.getLogger().info("Client protocol version is incompatible. Not replying on secret request");
-                String msg = Webcam.SERVER_CONFIG.getData().messages().incompatibleModVersion();
+                String msg = Webcam.getServerConfig().getData().messages().incompatibleModVersion();
                 if (!msg.isBlank()) {
                     Webcam.getService().sendSystemMessage(playerUuid, String.format(msg, message.version(), Webcam.getVersion()));
                 }
@@ -38,7 +38,7 @@ public class ServerMessaging {
     @FunctionalInterface
     public interface ServerHandler<T extends Message> {
 
-        void handle(UUID playerUuid, T message);
+        void handle(UUID playerUuid, String playerName, T message);
 
     }
 
