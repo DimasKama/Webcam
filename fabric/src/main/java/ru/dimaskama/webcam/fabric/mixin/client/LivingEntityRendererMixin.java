@@ -25,7 +25,7 @@ abstract class LivingEntityRendererMixin {
         }
         if (entity instanceof Player) {
             WebcamClient client = WebcamClient.getInstance();
-            if (client != null && WebcamFabricClient.CONFIG.getData().showWebcams()) {
+            if (client != null && client.hasViewPermission() && WebcamFabricClient.CONFIG.getData().showWebcams()) {
                 DisplayingVideo displayingVideo = client.getDisplayingVideos().get(entity.getUUID());
                 if (displayingVideo != null) {
                     DisplayingVideo.RenderData renderData = displayingVideo.getRenderData();
