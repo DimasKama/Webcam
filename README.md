@@ -32,7 +32,7 @@ This project is new and may not work well. Please [**submit an issue**](https://
 
 ## Client Usage
 
-For the client, just put the mod in the `mods` directory with the Fabric API. The settings menu can be opened by hotkey (`C` by default)
+Put the mod in the `mods` directory with the Fabric API. The settings menu can be opened by hotkey (`C` by default)
 
 ![settings](images/settings.jpg)
 
