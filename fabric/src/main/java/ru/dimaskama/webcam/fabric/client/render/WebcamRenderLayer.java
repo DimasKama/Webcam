@@ -15,7 +15,8 @@ import org.joml.Quaternionf;
 import org.joml.Vector2fc;
 import ru.dimaskama.webcam.config.VideoDisplayShape;
 import ru.dimaskama.webcam.fabric.client.DisplayingVideo;
-import ru.dimaskama.webcam.fabric.client.WebcamClient;
+import ru.dimaskama.webcam.fabric.client.WebcamFabricClient;
+import ru.dimaskama.webcam.fabric.client.net.WebcamClient;
 import ru.dimaskama.webcam.net.VideoSource;
 
 public class WebcamRenderLayer<M extends HumanoidModel<AbstractClientPlayer>> extends RenderLayer<AbstractClientPlayer, M> {
@@ -32,7 +33,7 @@ public class WebcamRenderLayer<M extends HumanoidModel<AbstractClientPlayer>> ex
         LocalPlayer localPlayer = Minecraft.getInstance().player;
         if (localPlayer != null && !entity.isInvisibleTo(localPlayer)) {
             WebcamClient client = WebcamClient.getInstance();
-            if (client != null) {
+            if (client != null && client.hasViewPermission() && WebcamFabricClient.CONFIG.getData().showWebcams()) {
                 DisplayingVideo displayingVideo = client.getDisplayingVideos().get(entity.getUUID());
                 if (displayingVideo != null) {
                     DisplayingVideo.RenderData renderData = displayingVideo.getRenderData();

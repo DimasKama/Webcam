@@ -1,21 +1,26 @@
 package ru.dimaskama.webcam.net.packet;
 
-import java.nio.ByteBuffer;
+import io.netty.buffer.ByteBuf;
 
-public class AuthAckPacket implements Packet {
+public final class AuthAckPacket implements Packet {
 
     public static final AuthAckPacket INSTANCE = new AuthAckPacket();
 
     private AuthAckPacket() {}
 
     @Override
-    public void writeBytes(ByteBuffer buffer) {
+    public void writeBytes(ByteBuf buf) {
 
     }
 
     @Override
     public PacketType<?> getType() {
         return PacketType.AUTH_ACK;
+    }
+
+    @Override
+    public int getEstimatedSize() {
+        return 0;
     }
 
     @Override

@@ -1,10 +1,10 @@
 package ru.dimaskama.webcam.message;
 
-import java.nio.ByteBuffer;
+import io.netty.buffer.ByteBuf;
 
 public interface Message {
 
-    void writeBytes(ByteBuffer buffer);
+    void writeBytes(ByteBuf buf);
 
     Channel<?> getChannel();
 

@@ -15,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class UpdateDevicesButton extends AbstractButton {
 
-    private static final ResourceLocation SPRITE = WebcamFabric.id("update");
+    private static final ResourceLocation SPRITE = WebcamFabric.id("button/update");
     private static CompletableFuture<Void> updateFuture = CompletableFuture.completedFuture(null);
 
     public UpdateDevicesButton(int x, int y, int width, int height) {

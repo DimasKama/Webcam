@@ -13,10 +13,10 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.ServerConnection;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import ru.dimaskama.webcam.velocity.config.ProxyConfig;
 
+import javax.annotation.Nullable;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
@@ -69,11 +69,13 @@ public class WebcamVelocity {
         }
         try {
             webcamProxy = new WebcamProxy(this);
-            webcamProxy.start();
-            logger.info("Webcam proxy server started on port {}", webcamProxy.getBoundPort());
+            logger.info("Webcam proxy server started on port {}:{}", webcamProxy.getAddress(), webcamProxy.getPort());
             registerChannels();
         } catch (Exception e) {
-            webcamProxy = null;
+            if (webcamProxy != null) {
+                webcamProxy.close();
+                webcamProxy = null;
+            }
             throw new RuntimeException("Failed to start Webcam proxy server", e);
         }
     }
@@ -87,7 +89,6 @@ public class WebcamVelocity {
         if (event.getIdentifier().equals(SecretMessage.CHANNEL)) {
             WebcamProxy webcamProxy = this.webcamProxy;
             if (webcamProxy != null
-                    && !webcamProxy.isClosed()
                     && event.getSource() instanceof ServerConnection server
                     && event.getTarget() instanceof Player player
             ) {

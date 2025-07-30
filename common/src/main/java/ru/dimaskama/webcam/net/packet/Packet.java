@@ -1,34 +1,29 @@
 package ru.dimaskama.webcam.net.packet;
 
-import ru.dimaskama.webcam.Utils;
-import ru.dimaskama.webcam.net.Encryption;
-
-import java.nio.ByteBuffer;
-import java.util.UUID;
+import io.netty.buffer.ByteBuf;
 
 public interface Packet {
 
-    void writeBytes(ByteBuffer buffer);
+    byte C2S_MAGIC = (byte) 0b11001100;
+    byte S2C_MAGIC = (byte) 0b11101110;
+
+    void writeBytes(ByteBuf buf);
 
     PacketType<?> getType();
 
-    default byte[] encrypt(UUID secret) throws Exception {
-        byte[] tempBuf = Utils.TEMP_BUFFERS.get();
-        ByteBuffer buffer = ByteBuffer.wrap(tempBuf);
-        buffer.put(getType().getId());
-        writeBytes(buffer);
-        return Encryption.encrypt(tempBuf, 0, buffer.position(), secret);
+    int getEstimatedSize();
+
+    default int getEstimatedSizeWithId() {
+        return 1 + getEstimatedSize();
     }
 
-    static Packet decrypt(byte[] data, int offset, int length, UUID secret) throws Exception {
-        byte[] decrypted = Encryption.decrypt(data, offset, length, secret);
-        if (decrypted.length == 0) {
-            throw new IllegalArgumentException("Empty packet");
-        }
-        ByteBuffer buffer = ByteBuffer.wrap(decrypted);
-        byte packetTypeId = buffer.get();
-        PacketType<?> packetType = PacketType.byId(packetTypeId);
-        return packetType.decode(buffer);
+    default void encodeWithId(ByteBuf buf) {
+        buf.writeByte(getType().getId());
+        writeBytes(buf);
+    }
+
+    static Packet decodeById(ByteBuf buf) {
+        return PacketType.byId(buf.readByte()).decode(buf);
     }
 
 }
