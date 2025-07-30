@@ -18,7 +18,7 @@ Mod and plugin that allows players to broadcast their webcams
 - Display size and position configuration
 - Display on player model face
 - Display distance limit
-- Webcam
+- Webcam broadcast and view permissions
 - Advanced client configuration ([Mod Menu](https://modrinth.com/mod/modmenu) & [Cloth Config API](https://modrinth.com/mod/cloth-config) required)
 - Ability to hide all webcams
 - Ability to hide selected players' webcams
