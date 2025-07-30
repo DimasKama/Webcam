@@ -1,6 +1,7 @@
 package ru.dimaskama.webcam.net.packet;
 
-import java.nio.ByteBuffer;
+import io.netty.buffer.ByteBuf;
+
 import java.util.UUID;
 
 public record AuthPacket(
@@ -8,17 +9,21 @@ public record AuthPacket(
         UUID secret
 ) implements Packet {
 
-    public AuthPacket(ByteBuffer buffer) {
-        this(new UUID(buffer.getLong(), buffer.getLong()), new UUID(buffer.getLong(), buffer.getLong()));
+    public AuthPacket(ByteBuf buf) {
+        this(new UUID(buf.readLong(), buf.readLong()), new UUID(buf.readLong(), buf.readLong()));
     }
 
     @Override
-    public void writeBytes(ByteBuffer buffer) {
-        buffer
-                .putLong(playerUuid.getMostSignificantBits())
-                .putLong(playerUuid.getLeastSignificantBits())
-                .putLong(secret.getMostSignificantBits())
-                .putLong(secret.getLeastSignificantBits());
+    public void writeBytes(ByteBuf buf) {
+        buf.writeLong(playerUuid.getMostSignificantBits())
+                .writeLong(playerUuid.getLeastSignificantBits())
+                .writeLong(secret.getMostSignificantBits())
+                .writeLong(secret.getLeastSignificantBits());
+    }
+
+    @Override
+    public int getEstimatedSize() {
+        return 32;
     }
 
     @Override

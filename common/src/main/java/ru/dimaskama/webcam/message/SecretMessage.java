@@ -1,6 +1,7 @@
 package ru.dimaskama.webcam.message;
 
-import java.nio.ByteBuffer;
+import io.netty.buffer.ByteBuf;
+
 import java.util.UUID;
 
 public record SecretMessage(
@@ -10,16 +11,17 @@ public record SecretMessage(
         String host
 ) implements Message {
 
-    public SecretMessage(ByteBuffer buffer) {
-        this(BufferUtils.readUuid(buffer), buffer.getShort() & 0xFFFF, buffer.getInt(), BufferUtils.readUtf8(buffer));
+    public SecretMessage(ByteBuf buf) {
+        this(new UUID(buf.readLong(), buf.readLong()), buf.readShort() & 0xFFFF, buf.readInt(), BufUtils.readUtf8(buf));
     }
 
     @Override
-    public void writeBytes(ByteBuffer buffer) {
-        BufferUtils.writeUuid(buffer, secret);
-        buffer.putShort((short) serverPort);
-        buffer.putInt(keepAlivePeriod);
-        BufferUtils.writeUtf8(buffer, host);
+    public void writeBytes(ByteBuf buf) {
+        buf.writeLong(secret.getMostSignificantBits())
+                .writeLong(secret.getLeastSignificantBits());
+        buf.writeShort(serverPort);
+        buf.writeInt(keepAlivePeriod);
+        BufUtils.writeUtf8(buf, host);
     }
 
     @Override

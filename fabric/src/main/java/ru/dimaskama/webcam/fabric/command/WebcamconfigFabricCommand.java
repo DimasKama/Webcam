@@ -10,7 +10,6 @@ import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.Entity;
 import ru.dimaskama.webcam.Webcam;
 import ru.dimaskama.webcam.command.WebcamconfigCommand;
 

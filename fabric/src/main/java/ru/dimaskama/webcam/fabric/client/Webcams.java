@@ -1,21 +1,20 @@
 package ru.dimaskama.webcam.fabric.client;
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntLists;
-import net.minecraft.client.Minecraft;
+import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.objects.*;
+import net.minecraft.network.chat.Component;
 import nu.pattern.OpenCV;
 import org.opencv.core.Core;
 import org.opencv.videoio.VideoCapture;
 import ru.dimaskama.webcam.Webcam;
-import ru.dimaskama.webcam.fabric.client.config.ClientConfig;
 import ru.dimaskama.webcam.fabric.client.config.Resolution;
-import ru.dimaskama.webcam.fabric.client.screen.WebcamScreen;
 
 public class Webcams {
 
+    private static final ObjectSortedSet<WebcamOutputListener> LISTENERS = ObjectSortedSets.synchronize(new ObjectLinkedOpenHashSet<>());
+    private static final Int2ObjectMap<CapturingDevice> CAPTURING_DEVICES = Int2ObjectMaps.synchronize(new Int2ObjectOpenHashMap<>());
     private static volatile IntList devices = IntList.of();
-    private static volatile CapturingDevice current;
+    private static volatile boolean updatingDevices;
 
     public static void init() {
         Webcam.getLogger().info("Loading OpenCV...");
@@ -27,12 +26,17 @@ public class Webcams {
 
     // OpenCV has no function to list available devices, so we have to try to start VideoCapture on each index
     public static synchronized void updateDevices() {
+        updatingDevices = true;
         Webcam.getLogger().info("Updating available webcam devices. Some errors may be printed");
-        CapturingDevice prev = current;
-        if (prev != null) {
-            current = null;
-            prev.close();
-        }
+        CAPTURING_DEVICES.values().removeIf(d -> {
+            d.close();
+            return true;
+        });
+        devices = IntLists.unmodifiable(listDevices());
+        updatingDevices = false;
+    }
+
+    private static IntList listDevices() {
         int max = WebcamFabricClient.CONFIG.getData().maxDevices();
         IntList list = new IntArrayList();
         for (int i = 0; i < max; i++) {
@@ -48,99 +52,111 @@ public class Webcams {
                 }
             }
         }
-        devices = IntLists.unmodifiable(list);
-        if (prev != null) {
-            try {
-                current = prev.recreate();
-                current.start();
-            } catch (WebcamException e) {
-                WebcamFabricClient.onWebcamError(e);
-            }
-        }
+        return list;
     }
 
     public static IntList getDevices() {
         return devices;
     }
 
-    public static synchronized void updateCapturing() {
-        ClientConfig config = WebcamFabricClient.CONFIG.getData();
-        updateCapturing(config.webcamEnabled(), config.selectedDevice(), config.webcamResolution(), config.webcamFps());
+    public static void addListener(WebcamOutputListener listener) {
+        LISTENERS.add(listener);
     }
 
-    public static synchronized void updateCapturing(boolean enabled, int device, Resolution resolution, int maxFps) {
-        if (enabled && device != -1) {
-            if (current == null || current.getDeviceNumber() != device) {
-                stopCapturing();
-                WebcamClient client = WebcamClient.getInstance();
-                try {
-                    current = new CapturingDevice(device, resolution, maxFps, client != null && !client.isClosed() ? client.getServerConfig().imageDimension() : 360, f -> Minecraft.getInstance().execute(() -> onFrame(f)));
-                    current.start();
-                } catch (WebcamException e) {
-                    WebcamFabricClient.onWebcamError(e);
+    public static void removeListener(WebcamOutputListener listener) {
+        LISTENERS.remove(listener);
+    }
+
+    public static boolean isCapturing(int deviceNumber) {
+        CapturingDevice device = CAPTURING_DEVICES.get(deviceNumber);
+        return device != null && device.getError() == null;
+    }
+
+    public static void broadcastError(Component text) {
+        DeviceException exception = new DeviceException(text);
+        LISTENERS.forEach(listener -> listener.onError(exception));
+    }
+
+    public static void updateListeners() {
+        if (!updatingDevices) {
+            updateListenersInternal();
+        }
+    }
+
+    private static synchronized void updateListenersInternal() {
+        if (!updatingDevices) {
+            for (int deviceNumber : devices) {
+                int frameListenerCount = 0;
+                Resolution resolution = Resolution.R_1280X720;
+                int fps = 30;
+                int imageDimension = 360;
+                synchronized (LISTENERS) {
+                    for (WebcamOutputListener listener : LISTENERS) {
+                        if (deviceNumber == listener.getSelectedDevice()) {
+                            if (listener.isListeningFrames()) {
+                                ++frameListenerCount;
+                            }
+                            Resolution resolutionOverride = listener.getResolution();
+                            if (resolutionOverride != null) {
+                                resolution = resolutionOverride;
+                            }
+                            int fpsOverride = listener.getFps();
+                            if (fpsOverride != -1) {
+                                fps = fpsOverride;
+                            }
+                            int imageDimensionOverride = listener.getImageDimension();
+                            if (imageDimensionOverride != -1) {
+                                imageDimension = imageDimensionOverride;
+                            }
+                        }
+                    }
                 }
-            } else {
-                current.setResolution(resolution);
-                current.setMaxFps(maxFps);
-            }
-        } else {
-            stopCapturing();
-        }
-    }
-
-    public static synchronized void updateImageDimension() {
-        WebcamClient client = WebcamClient.getInstance();
-        if (client != null && current != null) {
-            current.setSquareDimension(client.getServerConfig().imageDimension());
-        }
-    }
-
-    public static boolean isCapturing() {
-        return current != null;
-    }
-
-    public static synchronized void stopCapturing() {
-        if (current != null) {
-            current.close();
-            Throwable error = current.getError();
-            if (error != null) {
-                WebcamFabricClient.onWebcamError(error);
-            }
-            current = null;
-        }
-    }
-
-    public static void tick() {
-        if (current != null) {
-            tickInternal();
-        }
-    }
-
-    private static synchronized void tickInternal() {
-        if (current != null) {
-            Throwable error = current.getError();
-            if (error != null) {
-                WebcamFabricClient.onWebcamError(error);
-                current.close();
-                current = null;
-            } else {
-                WebcamClient client = WebcamClient.getInstance();
-                if (client == null || client.isClosed()) {
-                    current.close();
-                    current = null;
+                if (frameListenerCount != 0) {
+                    CapturingDevice device = CAPTURING_DEVICES.computeIfAbsent(deviceNumber, i -> new CapturingDevice(i, new FrameConsumerImpl(i)));
+                    device.setResolution(resolution);
+                    device.setFps(fps);
+                    device.setSquareDimension(imageDimension);
+                    if (device.getState() == Thread.State.NEW) {
+                        device.start();
+                    } else {
+                        Throwable error = device.getError();
+                        if (error != null && device.close()) {
+                            DeviceException deviceException = DeviceException.wrap(deviceNumber, error);
+                            LISTENERS.forEach(listener -> {
+                                if (listener.getSelectedDevice() == deviceNumber) {
+                                    listener.onError(deviceException);
+                                }
+                            });
+                            Webcam.getLogger().warn("Device error", deviceException);
+                        }
+                    }
+                } else {
+                    CapturingDevice device = CAPTURING_DEVICES.remove(deviceNumber);
+                    if (device != null) {
+                        device.close();
+                    }
                 }
             }
         }
     }
 
-    private static void onFrame(byte[] jpgImage) {
-        if (Minecraft.getInstance().screen instanceof WebcamScreen webcamScreen) {
-            webcamScreen.onFrame(jpgImage);
+    private static class FrameConsumerImpl implements CapturingDevice.FrameConsumer {
+
+        private final int deviceNumber;
+
+        private FrameConsumerImpl(int deviceNumber) {
+            this.deviceNumber = deviceNumber;
         }
-        WebcamClient client = WebcamClient.getInstance();
-        if (client != null && !client.isClosed() && client.isAuthenticated()) {
-            client.sendFrame(jpgImage);
+
+        @Override
+        public void consumeFrame(int fps, int width, int height, byte[] rgba) {
+            LISTENERS.forEach(listener -> {
+                if (deviceNumber == listener.getSelectedDevice() && listener.isListeningFrames()) {
+                    listener.onFrame(deviceNumber, fps, width, height, rgba);
+                }
+            });
         }
+
     }
 
 }

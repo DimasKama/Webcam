@@ -1,5 +1,7 @@
 package ru.dimaskama.webcam.spigot;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -7,7 +9,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.messaging.Messenger;
-import ru.dimaskama.webcam.Utils;
 import ru.dimaskama.webcam.Webcam;
 import ru.dimaskama.webcam.WebcamEvents;
 import ru.dimaskama.webcam.WebcamService;
@@ -19,7 +20,6 @@ import ru.dimaskama.webcam.message.ServerMessaging;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,60 +68,77 @@ public class WebcamSpigot extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        Webcam.init(getDescription().getVersion(), new WebcamService() {
-            @Override
-            public <T extends Message> void registerChannel(Channel<T> channel, ServerMessaging.ServerHandler<T> handler) {
-                Messenger messenger = Bukkit.getMessenger();
-                if (handler == null) {
-                    messenger.registerOutgoingPluginChannel(WebcamSpigot.this, channel.getId());
-                } else {
-                    messenger.registerIncomingPluginChannel(WebcamSpigot.this, channel.getId(), (ch, player, encoded) ->
-                            handler.handle(player.getUniqueId(), channel.decode(ByteBuffer.wrap(encoded))));
-                }
-            }
-
-            @Override
-            public void sendToPlayer(UUID player, Message message) {
-                Player serverPlayer = Bukkit.getPlayer(player);
-                if (serverPlayer != null) {
-                    WebcamSpigot.registerChannel(serverPlayer, message.getChannel());
-                    byte[] tempBuf = Utils.TEMP_BUFFERS.get();
-                    ByteBuffer buffer = ByteBuffer.wrap(tempBuf);
-                    message.writeBytes(buffer);
-                    buffer.flip();
-                    byte[] encoded = new byte[buffer.remaining()];
-                    buffer.get(encoded);
-                    serverPlayer.sendPluginMessage(WebcamSpigot.this, message.getChannel().getId(), encoded);
-                }
-            }
-
-            @Override
-            public void sendSystemMessage(UUID player, String message) {
-                Player serverPlayer = Bukkit.getPlayer(player);
-                if (serverPlayer != null) {
-                    serverPlayer.sendMessage(message);
-                }
-            }
-
-            @Override
-            public void acceptForNearbyPlayers(UUID playerUuid, double maxDistance, Consumer<Set<UUID>> action) {
-                Player player = Bukkit.getPlayer(playerUuid);
-                if (player != null) {
-                    Location pos = player.getLocation();
-                    double maxDistanceSqr = maxDistance * maxDistance;
-                    Set<UUID> players = new HashSet<>();
-                    for (Player levelPlayer : player.getWorld().getPlayers()) {
-                        if (levelPlayer.getLocation().distanceSquared(pos) <= maxDistanceSqr) {
-                            players.add(levelPlayer.getUniqueId());
+        Webcam.init(
+                getDescription().getVersion(),
+                getDataFolder().toPath(),
+                new WebcamService() {
+                    @Override
+                    public <T extends Message> void registerChannel(Channel<T> channel, ServerMessaging.ServerHandler<T> handler) {
+                        Messenger messenger = Bukkit.getMessenger();
+                        if (handler == null) {
+                            messenger.registerOutgoingPluginChannel(WebcamSpigot.this, channel.getId());
+                        } else {
+                            messenger.registerIncomingPluginChannel(WebcamSpigot.this, channel.getId(),
+                                    (ch, player, encoded) -> handler.handle(
+                                            player.getUniqueId(),
+                                            player.getName(),
+                                            channel.decode(Unpooled.wrappedBuffer(encoded))
+                                    )
+                            );
                         }
                     }
-                    action.accept(players);
+
+                    @Override
+                    public void sendToPlayer(UUID player, Message message) {
+                        Player serverPlayer = Bukkit.getPlayer(player);
+                        if (serverPlayer != null) {
+                            WebcamSpigot.registerChannel(serverPlayer, message.getChannel());
+                            ByteBuf buf = Unpooled.buffer(32);
+                            message.writeBytes(buf);
+                            byte[] bytes = new byte[buf.readableBytes()];
+                            buf.readBytes(bytes);
+                            serverPlayer.sendPluginMessage(WebcamSpigot.this, message.getChannel().getId(), bytes);
+                        }
+                    }
+
+                    @Override
+                    public void sendSystemMessage(UUID player, String message) {
+                        Player serverPlayer = Bukkit.getPlayer(player);
+                        if (serverPlayer != null) {
+                            serverPlayer.sendMessage(message);
+                        }
+                    }
+
+                    @Override
+                    public void acceptForNearbyPlayers(UUID playerUuid, double maxDistance, Consumer<Set<UUID>> action) {
+                        Player player = Bukkit.getPlayer(playerUuid);
+                        if (player != null) {
+                            Location pos = player.getLocation();
+                            double maxDistanceSqr = maxDistance * maxDistance;
+                            Set<UUID> players = new HashSet<>();
+                            for (Player levelPlayer : player.getWorld().getPlayers()) {
+                                if (levelPlayer.getLocation().distanceSquared(pos) <= maxDistanceSqr) {
+                                    players.add(levelPlayer.getUniqueId());
+                                }
+                            }
+                            action.accept(players);
+                        }
+                    }
+
+                    @Override
+                    public boolean checkPermission(UUID playerUuid, String permission, boolean defaultValue) {
+                        Player player = Bukkit.getPlayer(playerUuid);
+                        if (player != null) {
+                            return player.hasPermission(permission);
+                        }
+                        return defaultValue;
+                    }
                 }
-            }
-        });
+        );
         getCommand("webcamconfig").setTabCompleter(this::tabCompleteConfigCommand);
         getServer().getPluginManager().registerEvents(new WebcamSpigotListener(), this);
         WebcamEvents.onMinecraftServerStarted();
+        getServer().getScheduler().runTaskTimer(this, WebcamEvents::onMinecraftServerTick, 1L, 1L);
     }
 
     private List<String> tabCompleteConfigCommand(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String label, @Nonnull String[] args) {

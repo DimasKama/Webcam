@@ -1,19 +1,25 @@
 package ru.dimaskama.webcam.net.packet;
 
-import java.nio.ByteBuffer;
+import io.netty.buffer.ByteBuf;
+
 import java.util.UUID;
 
 public record CloseSourceS2CPacket(
         UUID sourceUuid
 ) implements Packet {
 
-    public CloseSourceS2CPacket(ByteBuffer buffer) {
-        this(new UUID(buffer.getLong(), buffer.getLong()));
+    public CloseSourceS2CPacket(ByteBuf buf) {
+        this(new UUID(buf.readLong(), buf.readLong()));
     }
 
     @Override
-    public void writeBytes(ByteBuffer buffer) {
-        buffer.putLong(sourceUuid.getMostSignificantBits()).putLong(sourceUuid.getLeastSignificantBits());
+    public void writeBytes(ByteBuf buf) {
+        buf.writeLong(sourceUuid.getMostSignificantBits()).writeLong(sourceUuid.getLeastSignificantBits());
+    }
+
+    @Override
+    public int getEstimatedSize() {
+        return 16;
     }
 
     @Override

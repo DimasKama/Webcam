@@ -8,15 +8,29 @@ Mod and plugin that allows players to broadcast their webcams
 - [Bukkit / Spigot / Paper](https://modrinth.com/plugin/webcam-mod/versions?l=bukkit)
 - [Velocity](https://modrinth.com/mod/webcam-mod/versions?l=velocity)
 
+## Features
+
+- High-quality webcam broadcasting
+- H.264 video codec
+- Bitrate control
+- Video resolution control
+- Different display shapes
+- Display size and position configuration
+- Display on player model face
+- Display distance limit
+- Webcam
+- Advanced client configuration ([Mod Menu](https://modrinth.com/mod/modmenu) & [Cloth Config API](https://modrinth.com/mod/cloth-config) required)
+- Ability to hide all webcams
+- Ability to hide selected players' webcams
+- Velocity proxy support
+
 ![screenshot](images/screenshot.jpg)
 
 ## Warning
 
 This project is new and may not work well. Please [**submit an issue**](https://github.com/DimasKama/Webcam/issues/new) if you find a bug
 
-## Usage
-
-For the server, see `Setup on server` and `Setup on proxy`
+## Client Usage
 
 For the client, just put the mod in the `mods` directory with the Fabric API. The settings menu can be opened by hotkey (`C` by default)
 
@@ -59,8 +73,9 @@ Here are the default values with their descriptions:
   "hide_nicknames": true,        // Whether to hide player's nickname if his webcam is enabled
   "display_self_webcam": false,  // Whether to show the player's webcam to himself
   "synced": {                    // These settings are synchronized with clients
-    "image_dimension": 360,      // Side dimension of square webcam images. (High values may cause lags)
-    "mtu": 1100                  // Maximum Transmission Unit of packets. You can lower this, if image on webcam starts look glitchy or not arrives at all
+    "image_dimension": 360,      // Side dimension of square webcam images
+    "mtu": 1100,                 // Maximum Transmission Unit of packets. You can lower this, if image on webcam starts look glitchy or not arrives at all
+    "bitrate": 500               // Video target bitrate (kbps)
   },
   "messages": {                  // Custom transtalions for messages, that are sent to players in different situations. May contain placeholders - %s
     "incompatible_mod_version": "Incompatible Webcam version. Your - %s, server's - %s" // The message that will be sent to player if he has incompatible Webcam mod version. You can set this to empty to disable sending this message
@@ -70,11 +85,13 @@ Here are the default values with their descriptions:
 
 ### Commands
 
-- `/webcamconfig <field> [new_value]` - command to read/update config values. Not all values can be changed with it. Requires `webcam.command.config` permission or OP.
+- `/webcamconfig <field> [new_value]` - command to read/update config values. Requires `webcam.command.config` permission or OP.
 
 ### Permissions
 
-- `webcam.command.config` - permission to modify Webcam server config
+- `webcam.command.config` - permission to modify Webcam server config (default: OP Level)
+- `webcam.broadcast` - permission broadcast webcam (default: true)
+- `webcam.view` - permission to view webcams (default: true)
 
 ## Setup on proxy
 

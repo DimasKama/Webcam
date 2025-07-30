@@ -1,21 +1,26 @@
 package ru.dimaskama.webcam.net.packet;
 
-import java.nio.ByteBuffer;
+import io.netty.buffer.ByteBuf;
 
-public class CloseSourceC2SPacket implements Packet {
+public final class CloseSourceC2SPacket implements Packet {
 
     public static final CloseSourceC2SPacket INSTANCE = new CloseSourceC2SPacket();
 
     private CloseSourceC2SPacket() {}
 
     @Override
-    public void writeBytes(ByteBuffer buffer) {
+    public void writeBytes(ByteBuf buf) {
 
     }
 
     @Override
     public PacketType<CloseSourceC2SPacket> getType() {
         return PacketType.CLOSE_SOURCE_C2S;
+    }
+
+    @Override
+    public int getEstimatedSize() {
+        return 0;
     }
 
     @Override
