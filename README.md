@@ -57,7 +57,10 @@ If you are using Velocity, see `Setup on proxy`
 
 ### Server config
 
-Server config is located in `config/webcam/server.json`  
+Location:
+- Fabric / Quilt: `config/webcam/server.json`
+- Bukkit / Spigot / Paper: `plugins/webcam/server.json`
+
 Here are the default values with their descriptions:  
 ```
 {
@@ -65,6 +68,7 @@ Here are the default values with their descriptions:
   "bind_address": "",            // Address to bind the Webcam server to. Leave blank to use the wildcard (0.0.0.0) address. F.e. use "127.0.0.1" to accept only local connections
   "host": "",                    // The hostname that clients should use to connect to the Webcam server. Leave blank to use the address, that player is connected to Minecraft with. Can be a simple address or an address with port. This will be ignored, if the server is proxied
   "keep_alive_period": 1000,     // Period of sending keep alive packets is milliseconds
+  "permission_check_period": 60, // Period of checking webcam.broadcast and webcam.view permissions in ticks
   "max_display_distance": 100.0, // The distance in blocks from player, in which other players can see his webcam
   "display_on_face": false,      // Whether to display webcam on player model face or above his head
   "display_shape": "round",      // Shape of webcams displayed above players' head. Possible values: "round", "square"
@@ -75,7 +79,7 @@ Here are the default values with their descriptions:
   "synced": {                    // These settings are synchronized with clients
     "image_dimension": 360,      // Side dimension of square webcam images
     "mtu": 1100,                 // Maximum Transmission Unit of packets. You can lower this, if image on webcam starts look glitchy or not arrives at all
-    "bitrate": 500               // Video target bitrate (kbps)
+    "bitrate": 500               // Target video bitrate (kbps)
   },
   "messages": {                  // Custom transtalions for messages, that are sent to players in different situations. May contain placeholders - %s
     "incompatible_mod_version": "Incompatible Webcam version. Your - %s, server's - %s" // The message that will be sent to player if he has incompatible Webcam mod version. You can set this to empty to disable sending this message
