@@ -1,58 +1,70 @@
 package ru.dimaskama.webcam.velocity;
 
 import com.velocitypowered.api.proxy.server.RegisteredServer;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.DatagramPacket;
+import io.netty.channel.socket.nio.NioDatagramChannel;
 import ru.dimaskama.webcam.velocity.config.ProxyConfig;
 
-import java.net.*;
-import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousCloseException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class WebcamProxy extends Thread {
+public class WebcamProxy extends SimpleChannelInboundHandler<DatagramPacket> {
 
-    private final BlockingQueue<RawPacket> packetQueue = new LinkedBlockingQueue<>();
+    private static final AtomicInteger THREAD_COUNT = new AtomicInteger();
+    private static volatile EventLoopGroup eventLoopGroup;
     private final WebcamVelocity plugin;
-    private final DatagramSocket socket;
-    private final PacketProcessingThread packetProcessingThread;
+    private final int port;
+    private final String address;
+    private final Channel channel;
     private final Map<UUID, ProxyBridge> bridges = new ConcurrentHashMap<>();
 
     public WebcamProxy(WebcamVelocity plugin) throws Exception {
         this.plugin = plugin;
-        setDaemon(true);
-        setName("WebcamProxyThread");
-        setUncaughtExceptionHandler((t, e) -> plugin.getLogger().error("Uncaught exception on WebcamProxyThread", e));
-        int port = plugin.getConfig().getPort();
-        String bindAddress = plugin.getConfig().getBindAddress();
-        InetAddress address = null;
-        try {
-            if (!bindAddress.isEmpty()) {
-                address = InetAddress.getByName(bindAddress);
+        this.port = plugin.getConfig().getPort();
+        String configuredAddress = plugin.getConfig().getBindAddress();
+        this.address = configuredAddress.isEmpty() ? "0.0.0.0" : configuredAddress;
+        if (eventLoopGroup == null) {
+            synchronized (WebcamProxy.class) {
+                if (eventLoopGroup == null) {
+                    eventLoopGroup = new NioEventLoopGroup(r -> {
+                        Thread thread = new Thread(r, "Webcam Proxy #" + THREAD_COUNT.getAndIncrement());
+                        thread.setDaemon(true);
+                        return thread;
+                    });
+                }
             }
-        } catch (Exception e) {
-            plugin.getLogger().error("Failed to parse bind address \"{}\"", bindAddress, e);
-            bindAddress = null;
         }
-        DatagramSocket socket;
-        try {
-            socket = new DatagramSocket(port, address);
-        } catch (BindException e) {
-            if (address == null || bindAddress.equals("0.0.0.0")) {
-                throw e;
-            }
-            plugin.getLogger().error("Failed to bind to address \"{}\", binding to wildcard IP instead", bindAddress);
-            socket = new DatagramSocket(port);
-        }
-        this.socket = socket;
-        packetProcessingThread = new PacketProcessingThread();
+        channel = new Bootstrap()
+                .group(eventLoopGroup)
+                .channel(NioDatagramChannel.class)
+                .handler(new ChannelInitializer<>() {
+                    @Override
+                    protected void initChannel(Channel ch) {
+                        ChannelPipeline pipeline = ch.pipeline();
+                        pipeline.addLast("proxy", WebcamProxy.this);
+                    }
+                })
+                .bind(new InetSocketAddress(address, port))
+                .sync()
+                .channel();
     }
 
-    public int getBoundPort() {
-        return socket.getLocalPort();
+    public int getPort() {
+        return port;
+    }
+
+    public String getAddress() {
+        return address;
     }
 
     public SecretMessage onSecretMessage(RegisteredServer server, UUID playerUuid, SecretMessage secret) {
@@ -92,115 +104,50 @@ public class WebcamProxy extends Thread {
         return bridges.remove(playerUuid) != null;
     }
 
-    @Override
-    public void run() {
-        try {
-            packetProcessingThread.start();
-            byte[] packetBuf = new byte[4096];
-            while (!isClosed()) {
-                try {
-                    DatagramPacket packet = new DatagramPacket(packetBuf, packetBuf.length);
-                    socket.receive(packet);
-                    long timestamp = System.currentTimeMillis();
-                    int len = packet.getLength();
-                    byte[] data = new byte[len];
-                    System.arraycopy(packet.getData(), packet.getOffset(), data, 0, len);
-                    packetQueue.add(new RawPacket(data, packet.getSocketAddress(), timestamp));
-                } catch (Exception e) {
-                    if (!(e instanceof SocketException && e.getCause() instanceof AsynchronousCloseException)) {
-                        plugin.getLogger().error("Socket read error", e);
-                    }
-                }
-            }
-        } finally {
-            socket.close();
-            try {
-                packetProcessingThread.join(100L);
-            } catch (InterruptedException ignored) {}
-        }
-    }
-
-    public void send(SocketAddress address, byte[] packet) throws Exception {
-        DatagramPacket datagram = new DatagramPacket(packet, packet.length, address);
-        socket.send(datagram);
-    }
-
-    public boolean isClosed() {
-        return socket.isClosed();
-    }
-
     public void close() {
-        socket.close();
+        try {
+            channel.close().sync();
+        } catch (Exception e) {
+            plugin.getLogger().warn("Failed to close Webcam proxy", e);
+        }
     }
 
-    private record RawPacket(
-            byte[] data,
-            SocketAddress address,
-            long timestamp
-    ) {}
-
-    private class PacketProcessingThread extends Thread {
-
-        public PacketProcessingThread() {
-            setDaemon(true);
-            setName("WebcamProxyPacketProcessingThread");
-            setUncaughtExceptionHandler((t, e) -> plugin.getLogger().error("Uncaught exception on WebcamProxyPacketProcessingThread", e));
-        }
-
-        @Override
-        public void run() {
-            while (!isClosed()) {
-                try {
-                    RawPacket rawPacket = packetQueue.poll(10L, TimeUnit.MILLISECONDS);
-                    if (rawPacket != null) {
-                        if (System.currentTimeMillis() - rawPacket.timestamp <= 15000L) {
-                            try {
-                                byte[] data = rawPacket.data;
-                                byte magic = data[0];
-                                if (magic == (byte) 0b11101110) {
-                                    // S2C. Check the server address and forward the message
-                                    UUID playerUuid = getPlayerUuid(rawPacket.data);
-                                    ProxyBridge bridge = bridges.get(playerUuid);
-                                    if (bridge != null && areAddressesSame(bridge.getServerAddress(), rawPacket.address)) {
-                                        bridge.lockAddress();
-                                        SocketAddress playerAddress = bridge.getPlayerAddress();
-                                        if (playerAddress != null) {
-                                            send(playerAddress, data);
-                                        }
-                                    }
-                                } else if (magic == (byte) 0b11001100) {
-                                    // C2S. Simply forward the message
-                                    UUID playerUuid = getPlayerUuid(rawPacket.data);
-                                    ProxyBridge bridge = bridges.get(playerUuid);
-                                    if (bridge != null) {
-                                        bridge.updatePlayerAddress(rawPacket.address);
-                                        send(bridge.getServerAddress(), data);
-                                    }
-                                }
-                            } catch (Exception ignored) {
-                                // Ignore invalid packets
-                            }
-                        } else {
-                            plugin.getLogger().debug("Dropping packets! Is server overloaded?");
-                        }
-                    }
-                } catch (Exception e) {
-                    plugin.getLogger().error("Error processing packet", e);
+    @Override
+    protected void channelRead0(ChannelHandlerContext ctx, DatagramPacket msg) throws Exception {
+        InetSocketAddress sender = msg.sender();
+        ByteBuf buf = msg.content();
+        byte magic = buf.readByte();
+        if (magic == (byte) 0b11101110) {
+            // S2C. Check the server address and forward the message
+            UUID playerUuid = new UUID(buf.readLong(), buf.readLong());
+            ProxyBridge bridge = bridges.get(playerUuid);
+            if (bridge != null && areAddressesSame(bridge.getServerAddress(), sender)) {
+                bridge.lockAddress();
+                InetSocketAddress playerAddress = bridge.getPlayerAddress();
+                if (playerAddress != null) {
+                    buf.resetReaderIndex();
+                    channel.writeAndFlush(new DatagramPacket(buf.retain(), playerAddress));
                 }
             }
+        } else if (magic == (byte) 0b11001100) {
+            // C2S. Simply forward the message
+            UUID playerUuid = new UUID(buf.readLong(), buf.readLong());
+            ProxyBridge bridge = bridges.get(playerUuid);
+            if (bridge != null) {
+                bridge.updatePlayerAddress(sender);
+                buf.resetReaderIndex();
+                channel.writeAndFlush(new DatagramPacket(buf.retain(), bridge.getServerAddress()));
+            }
         }
+    }
 
-        private static UUID getPlayerUuid(byte[] packetData) {
-            ByteBuffer buffer = ByteBuffer.wrap(packetData, 1, 16);
-            return new UUID(buffer.getLong(), buffer.getLong());
-        }
+    private static boolean areAddressesSame(InetSocketAddress address1, InetSocketAddress address2) {
+        return Objects.equals(address1.getAddress(), address2.getAddress()) && address1.getPort() == address2.getPort();
+    }
 
-        private static boolean areAddressesSame(InetSocketAddress inetSocketAddress1, SocketAddress socketAddress2) {
-            return socketAddress2 instanceof InetSocketAddress inetSocketAddress2
-                    && inetSocketAddress1.getAddress().equals(inetSocketAddress2.getAddress())
-                    && inetSocketAddress1.getPort() == inetSocketAddress2.getPort();
-        }
-
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        plugin.getLogger().debug("Webcam proxy packet handler exception", cause);
     }
 
 }

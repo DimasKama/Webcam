@@ -7,6 +7,11 @@
   "authors": [
     "DimasKama"
   ],
+  "contact": {
+    "homepage": "https://modrinth.com/plugin/webcam-mod",
+    "sources": "https://github.com/DimasKama/Webcam",
+    "issues": "https://github.com/DimasKama/Webcam/issues"
+  },
   "license": "All-Rights-Reserved",
   "icon": "assets/webcam/icon.png",
   "environment": "*",
@@ -19,6 +24,9 @@
     ],
     "client": [
       "ru.dimaskama.webcam.fabric.client.WebcamFabricClient"
+    ],
+    "modmenu": [
+      "ru.dimaskama.webcam.fabric.client.compat.ModMenuCompat"
     ]
   },
   "mixins": [
@@ -29,5 +37,9 @@
     "minecraft": ">=${min_minecraft_version}",
     "java": ">=21",
     "fabric-api": "*"
+  },
+  "recommends": {
+    "modmenu": "*",
+    "cloth-config": "*"
   }
 }

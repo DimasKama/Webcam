@@ -11,7 +11,6 @@ import ru.dimaskama.webcam.message.Message;
 import ru.dimaskama.webcam.message.ServerMessaging;
 
 import javax.annotation.Nullable;
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,22 +25,19 @@ public class WebcamFabricMessaging {
         (handler != null ? PayloadTypeRegistry.playC2S() : PayloadTypeRegistry.playS2C()).register(
                 payloadType,
                 StreamCodec.of(
-                        (buf, payload) -> {
-                            ByteBuffer buffer = ByteBuffer.wrap(new byte[buf.writableBytes()]);
-                            payload.message.writeBytes(buffer);
-                            buffer.flip();
-                            buf.writeBytes(buffer);
-                        },
-                        buf -> {
-                            ByteBuffer buffer = buf.nioBuffer();
-                            Message message = channel.decode(buffer);
-                            buf.skipBytes(buffer.position());
-                            return new MessagePayload(payloadType, message);
-                        }
+                        (buf, payload) -> payload.message.writeBytes(buf),
+                        buf -> new MessagePayload(payloadType, channel.decode(buf))
                 )
         );
         if (handler != null) {
-            ServerPlayNetworking.registerGlobalReceiver(payloadType, (payload, context) -> handler.handle(context.player().getUUID(), (T) payload.message()));
+            ServerPlayNetworking.registerGlobalReceiver(
+                    payloadType,
+                    (payload, context) -> handler.handle(
+                            context.player().getUUID(),
+                            context.player().getGameProfile().getName(),
+                            (T) payload.message()
+                    )
+            );
         }
     }
 

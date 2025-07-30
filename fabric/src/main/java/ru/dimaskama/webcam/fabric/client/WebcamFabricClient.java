@@ -9,18 +9,21 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 import ru.dimaskama.webcam.Webcam;
 import ru.dimaskama.webcam.config.JsonConfig;
 import ru.dimaskama.webcam.fabric.WebcamFabric;
 import ru.dimaskama.webcam.fabric.WebcamFabricMessaging;
+import ru.dimaskama.webcam.fabric.client.config.BlockedSources;
 import ru.dimaskama.webcam.fabric.client.config.ClientConfig;
+import ru.dimaskama.webcam.fabric.client.net.WebcamClient;
 import ru.dimaskama.webcam.fabric.client.render.WebcamHud;
 import ru.dimaskama.webcam.fabric.client.render.WebcamRenderTypes;
 import ru.dimaskama.webcam.fabric.client.render.WebcamWorldRenderer;
+import ru.dimaskama.webcam.fabric.client.screen.AdvancedWebcamScreen;
 import ru.dimaskama.webcam.fabric.client.screen.WebcamScreen;
 import ru.dimaskama.webcam.fabric.client.screen.widget.UpdateDevicesButton;
 import ru.dimaskama.webcam.message.Channel;
@@ -30,9 +33,14 @@ import ru.dimaskama.webcam.message.SecretRequestMessage;
 public class WebcamFabricClient implements ClientModInitializer {
 
     public static final JsonConfig<ClientConfig> CONFIG = new JsonConfig<>(
-            "config/webcam/client.json",
+            FabricLoader.getInstance().getConfigDir().resolve(Webcam.MOD_ID).resolve("client.json").toString(),
             ClientConfig.CODEC,
             ClientConfig::new
+    );
+    public static final JsonConfig<BlockedSources> BLOCKED_SOURCES = new JsonConfig<>(
+            FabricLoader.getInstance().getConfigDir().resolve(Webcam.MOD_ID).resolve("blocked_sources.json").toString(),
+            BlockedSources.CODEC,
+            BlockedSources::new
     );
     public static final KeyMapping OPEN_WEBCAM_MENU_KEY = new KeyMapping(
             "key.webcam.open_menu",
@@ -44,6 +52,7 @@ public class WebcamFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         CONFIG.loadOrCreate();
+        BLOCKED_SOURCES.loadOrCreate();
 
         Webcams.init();
         UpdateDevicesButton.updateDevices();
@@ -73,44 +82,26 @@ public class WebcamFabricClient implements ClientModInitializer {
 
     private static void onServerDisconnect() {
         WebcamClient.shutdown();
-        Webcams.stopCapturing();
     }
 
     private static void onClientTick(Minecraft minecraft) {
         WebcamClient client = WebcamClient.getInstance();
-        if (client != null && !client.isClosed()) {
-            client.tick();
+        if (client != null) {
+            client.minecraftTick();
         }
-        Webcams.tick();
+        Webcams.updateListeners();
         while (OPEN_WEBCAM_MENU_KEY.consumeClick()) {
-            if (client != null && !client.isClosed() && client.isAuthenticated()) {
-                minecraft.setScreen(new WebcamScreen(null));
-            } else {
-                onWebcamError(Component.translatable("webcam.screen.webcam.not_connected"));
-            }
+            minecraft.setScreen(new WebcamScreen(null, false));
+        }
+        if (AdvancedWebcamScreen.CAN_USE) {
+            AdvancedWebcamScreen.tick(minecraft);
         }
     }
 
-    public static void onSecretReceived(SecretMessage secret) {
+    private static void onSecretReceived(SecretMessage secret) {
         Webcam.getLogger().info("Received secret");
         Minecraft minecraft = Minecraft.getInstance();
         WebcamClient.initialize(minecraft.player.getUUID(), minecraft.getConnection().getConnection().getRemoteAddress(), secret);
-    }
-
-    public static void onWebcamError(Component text) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.screen instanceof WebcamScreen screen) {
-            screen.setErrorMessage(text);
-        } else if (minecraft.player != null) {
-            minecraft.player.displayClientMessage(text, true);
-        }
-    }
-
-    public static void onWebcamError(Throwable throwable) {
-        onWebcamError(throwable instanceof WebcamException webcamException
-                ? webcamException.getText()
-                : Component.translatable("webcam.internal_error", throwable.toString()));
-        Webcam.getLogger().warn("Webcam error", throwable);
     }
 
 }

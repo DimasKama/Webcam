@@ -13,14 +13,15 @@ import org.joml.Vector2fc;
 import org.joml.Vector3dc;
 import ru.dimaskama.webcam.config.VideoDisplayShape;
 import ru.dimaskama.webcam.fabric.client.DisplayingVideo;
-import ru.dimaskama.webcam.fabric.client.WebcamClient;
+import ru.dimaskama.webcam.fabric.client.WebcamFabricClient;
+import ru.dimaskama.webcam.fabric.client.net.WebcamClient;
 import ru.dimaskama.webcam.net.VideoSource;
 
 public class WebcamWorldRenderer {
 
     public static void renderWorldWebcams(WorldRenderContext context) {
         WebcamClient client = WebcamClient.getInstance();
-        if (client != null) {
+        if (client != null && client.hasViewPermission() && WebcamFabricClient.CONFIG.getData().showWebcams()) {
             client.getDisplayingVideos().values().forEach(displayingVideo -> {
                 DisplayingVideo.RenderData renderData = displayingVideo.getRenderData();
                 if (renderData != null && renderData.source() instanceof VideoSource.Custom custom) {

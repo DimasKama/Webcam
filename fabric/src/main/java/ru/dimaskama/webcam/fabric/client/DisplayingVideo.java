@@ -5,61 +5,62 @@ import com.mojang.util.UndashedUuid;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
-import ru.dimaskama.webcam.Webcam;
+import ru.dimaskama.javah264.DecodeResult;
+import ru.dimaskama.javah264.H264Decoder;
 import ru.dimaskama.webcam.fabric.WebcamFabric;
-import ru.dimaskama.webcam.net.FrameChunk;
+import ru.dimaskama.webcam.net.NalUnit;
 import ru.dimaskama.webcam.net.VideoSource;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DisplayingVideo {
 
     private final UUID uuid;
     private final ResourceLocation textureId;
-    private final List<byte[]> buildingFrame = new ArrayList<>();
-    private long sequenceNumber = -1;
-    private int frameNumber = -1;
-    private FrameChunk.Type frameChunkType = FrameChunk.Type.SINGLE;
+    private final H264Decoder decoder;
+    private final VideoPacketBuffer buffer = new VideoPacketBuffer(WebcamFabricClient.CONFIG.getData().packetBufferSize(), this::acceptVideoPacket);
+    private final AtomicReference<DecodeResult> newFrame = new AtomicReference<>();
     private volatile VideoSource lastSource;
-    @Nullable
-    private volatile NativeImage newImage;
     private volatile long lastChunkTime = System.currentTimeMillis();
+    private NativeImage image;
     private DynamicTexture texture;
-    private boolean textureUploaded;
 
     public DisplayingVideo(UUID uuid) {
         this.uuid = uuid;
         textureId = WebcamFabric.id("webcam_" + UndashedUuid.toString(uuid));
+        try {
+            decoder = H264Decoder.builder()
+                    .flushBehavior(H264Decoder.FlushBehavior.NoFlush)
+                    .build();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create H264Decoder", e);
+        }
     }
 
     public UUID getUuid() {
         return uuid;
     }
 
-    // Get render data synchronously
     @Nullable
     public RenderData getRenderData() {
-        VideoSource source;
-        NativeImage newImage;
-        synchronized (this) {
-            source = lastSource;
-            newImage = this.newImage;
-            this.newImage = null;
-        }
-        if (newImage != null) {
-            if (texture != null && sizeEquals(texture.getPixels(), newImage)) {
-                texture.setPixels(newImage);
-                texture.upload();
-            } else {
-                texture = new DynamicTexture(textureId::getPath, newImage);
+        DecodeResult newFrame = this.newFrame.getAndSet(null);
+        if (newFrame != null) {
+            NativeImage image = ImageUtil.createNativeImage(this.image, newFrame.getWidth(), newFrame.getHeight(), newFrame.getImage());
+            if (image != this.image) {
+                if (texture != null) {
+                    texture.close();
+                }
+                texture = new DynamicTexture(textureId::getPath, image);
+                texture.setFilter(true, false);
                 Minecraft.getInstance().getTextureManager().register(textureId, texture);
+            } else {
+                texture.upload();
             }
-            textureUploaded = true;
+            this.image = image;
         }
-        return textureUploaded ? new RenderData(source, textureId) : null;
+        return texture != null ? new RenderData(lastSource, textureId) : null;
     }
 
     private static boolean sizeEquals(NativeImage image1, NativeImage image2) {
@@ -70,45 +71,24 @@ public class DisplayingVideo {
         return lastChunkTime;
     }
 
-    public void closeTexture() {
-        Minecraft.getInstance().getTextureManager().release(textureId);
+    public void onVideoPacket(VideoSource source, NalUnit nalUnit) {
+        buffer.receivePacket(nalUnit.sequenceNumber(), nalUnit.data());
+        lastSource = source;
+        lastChunkTime = System.currentTimeMillis();
     }
 
-    public void onFrameChunk(VideoSource source, FrameChunk chunk) {
-        if (frameNumber != chunk.frameNumber() || sequenceNumber + 1 == chunk.sequenceNumber() && frameChunkType.isNextExpected(chunk.type())) {
-            buildingFrame.add(chunk.chunk());
-            if (chunk.type() == FrameChunk.Type.END || chunk.type() == FrameChunk.Type.SINGLE) {
-                int totalSize = 0;
-                for (byte[] savedChunk : buildingFrame) {
-                    totalSize += savedChunk.length;
-                }
-                byte[] jpgImage = new byte[totalSize];
-                int i = 0;
-                for (byte[] savedChunk : buildingFrame) {
-                    System.arraycopy(savedChunk, 0, jpgImage, i, savedChunk.length);
-                    i += savedChunk.length;
-                }
-                buildingFrame.clear();
-                try {
-                    NativeImage image = ImageUtil.convertJpgToNativeImage(null, jpgImage);
-                    // Write render data synchronously
-                    synchronized (this) {
-                        this.lastSource = source;
-                        this.newImage = image;
-                    }
-                } catch (Exception e) {
-                    if (Webcam.isDebugMode()) {
-                        Webcam.getLogger().warn(source.getUuid() + " sent invalid jpg frame", e);
-                    }
-                }
-            }
-        } else {
-            buildingFrame.clear();
+    private void acceptVideoPacket(byte[] nal) {
+        DecodeResult decoded;
+        synchronized (decoder) {
+            decoded = decoder.decodeRGBA(nal);
         }
-        sequenceNumber = chunk.sequenceNumber();
-        frameNumber = chunk.frameNumber();
-        frameChunkType = chunk.type();
-        lastChunkTime = System.currentTimeMillis();
+        if (decoded != null) {
+            newFrame.set(decoded);
+        }
+    }
+
+    public void close() {
+        Minecraft.getInstance().getTextureManager().release(textureId);
     }
 
     public record RenderData(VideoSource source, ResourceLocation textureId) {}

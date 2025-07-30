@@ -7,8 +7,15 @@ import java.util.UUID;
 public class WebcamEvents {
 
     public static void onMinecraftServerStarted() {
-        Webcam.SERVER_CONFIG.loadOrCreate();
-        WebcamServer.initialize(Webcam.SERVER_CONFIG.getData());
+        Webcam.getServerConfig().loadOrCreate();
+        WebcamServer.initialize(Webcam.getServerConfig().getData());
+    }
+
+    public static void onMinecraftServerTick() {
+        WebcamServer server = WebcamServer.getInstance();
+        if (server != null) {
+            server.minecraftTick();
+        }
     }
 
     public static void onMinecraftServerStopping() {
@@ -17,7 +24,7 @@ public class WebcamEvents {
 
     public static void onPlayerDisconnected(UUID player) {
         WebcamServer server = WebcamServer.getInstance();
-        if (server != null && !server.isClosed()) {
+        if (server != null) {
             server.disconnectPlayer(player);
         }
     }

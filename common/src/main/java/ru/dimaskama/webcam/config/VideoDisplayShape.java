@@ -42,4 +42,8 @@ public enum VideoDisplayShape {
         throw new IllegalArgumentException("Unknown shape: " + key);
     }
 
+    @Override
+    public String toString() {
+        return key;
+    }
 }
