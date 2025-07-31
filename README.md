@@ -94,7 +94,7 @@ Here are the default values with their descriptions:
 ### Permissions
 
 - `webcam.command.config` - permission to modify Webcam server config (default: OP Level)
-- `webcam.broadcast` - permission broadcast webcam (default: true)
+- `webcam.broadcast` - permission to broadcast webcam (default: true)
 - `webcam.view` - permission to view webcams (default: true)
 
 ## Setup on proxy
