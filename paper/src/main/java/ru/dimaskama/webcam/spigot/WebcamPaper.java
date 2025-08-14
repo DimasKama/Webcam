@@ -28,7 +28,7 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class WebcamSpigot extends JavaPlugin {
+public class WebcamPaper extends JavaPlugin {
 
     @Override
     public void onLoad() {
@@ -69,16 +69,16 @@ public class WebcamSpigot extends JavaPlugin {
     @Override
     public void onEnable() {
         Webcam.init(
-                getDescription().getVersion(),
+                getPluginMeta().getVersion(),
                 getDataFolder().toPath(),
                 new WebcamService() {
                     @Override
                     public <T extends Message> void registerChannel(Channel<T> channel, ServerMessaging.ServerHandler<T> handler) {
                         Messenger messenger = Bukkit.getMessenger();
                         if (handler == null) {
-                            messenger.registerOutgoingPluginChannel(WebcamSpigot.this, channel.getId());
+                            messenger.registerOutgoingPluginChannel(WebcamPaper.this, channel.getId());
                         } else {
-                            messenger.registerIncomingPluginChannel(WebcamSpigot.this, channel.getId(),
+                            messenger.registerIncomingPluginChannel(WebcamPaper.this, channel.getId(),
                                     (ch, player, encoded) -> handler.handle(
                                             player.getUniqueId(),
                                             player.getName(),
@@ -92,12 +92,12 @@ public class WebcamSpigot extends JavaPlugin {
                     public void sendToPlayer(UUID player, Message message) {
                         Player serverPlayer = Bukkit.getPlayer(player);
                         if (serverPlayer != null) {
-                            WebcamSpigot.registerChannel(serverPlayer, message.getChannel());
+                            WebcamPaper.registerChannel(serverPlayer, message.getChannel());
                             ByteBuf buf = Unpooled.buffer(32);
                             message.writeBytes(buf);
                             byte[] bytes = new byte[buf.readableBytes()];
                             buf.readBytes(bytes);
-                            serverPlayer.sendPluginMessage(WebcamSpigot.this, message.getChannel().getId(), bytes);
+                            serverPlayer.sendPluginMessage(WebcamPaper.this, message.getChannel().getId(), bytes);
                         }
                     }
 
@@ -136,9 +136,26 @@ public class WebcamSpigot extends JavaPlugin {
                 }
         );
         getCommand("webcamconfig").setTabCompleter(this::tabCompleteConfigCommand);
-        getServer().getPluginManager().registerEvents(new WebcamSpigotListener(), this);
+        getServer().getPluginManager().registerEvents(new WebcamPaperListener(), this);
         WebcamEvents.onMinecraftServerStarted();
-        getServer().getScheduler().runTaskTimer(this, WebcamEvents::onMinecraftServerTick, 1L, 1L);
+        if (isFolia()) {
+            getServer()
+                    .getGlobalRegionScheduler()
+                    .runAtFixedRate(this, t -> WebcamEvents.onMinecraftServerTick(), 1L, 1L);
+        } else {
+            getServer()
+                    .getScheduler()
+                    .runTaskTimer(this, WebcamEvents::onMinecraftServerTick, 1L, 1L);
+        }
+    }
+
+    private static boolean isFolia() {
+        try {
+            Class.forName("io.papermc.paper.threadedregions.RegionizedServer");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 
     private List<String> tabCompleteConfigCommand(@Nonnull CommandSender sender, @Nonnull Command command, @Nonnull String label, @Nonnull String[] args) {

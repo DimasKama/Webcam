@@ -46,3 +46,4 @@ bin/
 /.idea/
 /velocity/build/
 /velocity/run/
+/paper/run/

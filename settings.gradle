@@ -9,4 +9,4 @@ pluginManagement {
 
 rootProject.name = 'webcam'
 
-include('common', 'fabric', 'spigot', 'velocity')
+include('common', 'fabric', 'paper', 'velocity')
