@@ -5,7 +5,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import ru.dimaskama.webcam.WebcamEvents;
 
-public class WebcamSpigotListener implements Listener {
+public class WebcamPaperListener implements Listener {
 
     @EventHandler
     public void onPlayerDisconnected(PlayerQuitEvent event) {
