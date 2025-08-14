@@ -1,9 +1,10 @@
 name: webcam
 version: ${version}
-main: ru.dimaskama.webcam.spigot.WebcamSpigot
+main: ru.dimaskama.webcam.spigot.WebcamPaper
 api-version: 1.21
 description: Webcams in Minecraft
 author: DimasKama
+folia-supported: true
 commands:
   webcamconfig:
     description: "Command for modifying Webcam server config"
