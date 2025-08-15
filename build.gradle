@@ -19,27 +19,27 @@ tasks.register('publishModsToModrinth') {
 tasks.register('publishPluginToModrinth') {
     group = 'webcam'
     doLast {
-        runGradleTasks(['clean'], ['spigot:modrinth'])
+        runGradleTasks(['clean'], ['paper:modrinth'])
     }
 }
 
 tasks.register('publishAllToModrinth') {
     group = 'webcam'
     doLast {
-        runGradleTasks(['clean'], ['fabric:modrinth', 'spigot:modrinth', 'velocity:modrinth'])
+        runGradleTasks(['clean'], ['fabric:modrinth', 'paper:modrinth', 'velocity:modrinth'])
     }
 }
 
 tasks.register('publishPluginsToHangar') {
     group = 'webcam'
     doLast {
-        runGradleTasks(['clean'], ['spigot:publishAllPublicationsToHangar'])
+        runGradleTasks(['clean'], ['paper:publishAllPublicationsToHangar'])
     }
 }
 
 tasks.register('publishEverything') {
     group = 'webcam'
     doLast {
-        runGradleTasks(['clean'], ['fabric:modrinth', 'spigot:modrinth', 'velocity:modrinth', 'spigot:publishAllPublicationsToHangar', 'velocity:publishAllPublicationsToHangar'])
+        runGradleTasks(['clean'], ['fabric:modrinth', 'paper:modrinth', 'velocity:modrinth', 'paper:publishAllPublicationsToHangar', 'velocity:publishAllPublicationsToHangar'])
     }
 }
