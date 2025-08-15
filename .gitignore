@@ -40,10 +40,9 @@ bin/
 
 ### Mac OS ###
 .DS_Store
-/spigot/run/
+/paper/run/
 /fabric/run/
 /common/run/
 /.idea/
 /velocity/build/
 /velocity/run/
-/paper/run/
