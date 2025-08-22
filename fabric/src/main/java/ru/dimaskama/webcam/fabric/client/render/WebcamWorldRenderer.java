@@ -1,7 +1,6 @@
 package ru.dimaskama.webcam.fabric.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.Camera;
 import net.minecraft.resources.ResourceLocation;
@@ -11,7 +10,6 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Vector2fc;
 import org.joml.Vector3dc;
-import ru.dimaskama.webcam.config.VideoDisplayShape;
 import ru.dimaskama.webcam.fabric.client.DisplayingVideo;
 import ru.dimaskama.webcam.fabric.client.WebcamFabricClient;
 import ru.dimaskama.webcam.fabric.client.net.WebcamClient;
@@ -47,16 +45,10 @@ public class WebcamWorldRenderer {
                     (customRotation != null ? customRotation.x() : -camera.getXRot()) * Mth.DEG_TO_RAD,
                     0.0F
             ));
-            float w = 0.5F * custom.getWidth();
-            float h = 0.5F * custom.getHeight();
+            float halfWidth = 0.5F * custom.getWidth();
+            float halfHeight = 0.5F * custom.getHeight();
             PoseStack.Pose pose = poseStack.last();
-            VertexConsumer consumer = context.consumers().getBuffer(custom.getShape() == VideoDisplayShape.ROUND
-                    ? WebcamRenderTypes.round(textureId)
-                    : WebcamRenderTypes.square(textureId));
-            consumer.addVertex(pose, -w, h, 0.0F).setUv(0.0F, 0.0F);
-            consumer.addVertex(pose, -w, -h, 0.0F).setUv(0.0F, 1.0F);
-            consumer.addVertex(pose, w, -h, 0.0F).setUv(1.0F, 1.0F);
-            consumer.addVertex(pose, w, h, 0.0F).setUv(1.0F, 0.0F);
+            WebcamRenderer.render(textureId, pose, context.consumers(), halfWidth, halfHeight, custom.getShape());
             poseStack.popPose();
         }
     }

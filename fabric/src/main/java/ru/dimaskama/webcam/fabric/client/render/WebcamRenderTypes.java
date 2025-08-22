@@ -13,10 +13,10 @@ import java.util.function.Function;
 
 public class WebcamRenderTypes {
 
-    private static final RenderPipeline SQUARE_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_COLOR_SNIPPET)
+    public static final RenderPipeline SQUARE_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_COLOR_SNIPPET)
             .withLocation(WebcamFabric.id("pipeline/square"))
             .withVertexShader("core/position_tex")
-            .withFragmentShader(WebcamFabric.id("core/square"))
+            .withFragmentShader("core/position_tex")
             .withSampler("Sampler0")
             .withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS)
             .build();
@@ -28,12 +28,12 @@ public class WebcamRenderTypes {
                     .setTextureState(new RenderStateShard.TextureStateShard(textureId, TriState.TRUE, false))
                     .createCompositeState(false)
     ));
-    private static final RenderPipeline ROUND_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_COLOR_SNIPPET)
-            .withLocation(WebcamFabric.id("pipeline/square"))
+    public static final RenderPipeline ROUND_PIPELINE = RenderPipeline.builder(RenderPipelines.MATRICES_COLOR_SNIPPET)
+            .withLocation(WebcamFabric.id("pipeline/round"))
             .withVertexShader("core/position_tex")
-            .withFragmentShader(WebcamFabric.id("core/round"))
+            .withFragmentShader("core/position_tex")
             .withSampler("Sampler0")
-            .withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS)
+            .withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.TRIANGLE_FAN)
             .build();
     private static final Function<ResourceLocation, RenderType> ROUND = Util.memoize(textureId -> RenderType.create(
             "webcam_round",

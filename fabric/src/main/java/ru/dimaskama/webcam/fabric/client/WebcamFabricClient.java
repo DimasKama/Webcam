@@ -17,6 +17,7 @@ import ru.dimaskama.webcam.Webcam;
 import ru.dimaskama.webcam.config.JsonConfig;
 import ru.dimaskama.webcam.fabric.WebcamFabric;
 import ru.dimaskama.webcam.fabric.WebcamFabricMessaging;
+import ru.dimaskama.webcam.fabric.client.compat.IrisCompat;
 import ru.dimaskama.webcam.fabric.client.config.BlockedSources;
 import ru.dimaskama.webcam.fabric.client.config.ClientConfig;
 import ru.dimaskama.webcam.fabric.client.net.WebcamClient;
@@ -58,6 +59,7 @@ public class WebcamFabricClient implements ClientModInitializer {
         UpdateDevicesButton.updateDevices();
 
         WebcamRenderTypes.init();
+        IrisCompat.init();
         HudLayerRegistrationCallback.EVENT.register(layeredDrawer ->
                 layeredDrawer.attachLayerAfter(IdentifiedLayer.MISC_OVERLAYS, WebcamFabric.id("webcam_hud"), WebcamHud::drawHud));
         WorldRenderEvents.AFTER_ENTITIES.register(WebcamWorldRenderer::renderWorldWebcams);
