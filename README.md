@@ -8,10 +8,16 @@ Mod and plugin that allows players to broadcast their webcams
 - [Bukkit / Spigot / Paper](https://modrinth.com/plugin/webcam-mod/versions?l=bukkit)
 - [Velocity](https://modrinth.com/mod/webcam-mod/versions?l=velocity)
 
+## ⚠️ Warning 
+This plugin requires special setup on server to work.  
+If you are a server administrator, please read the section `Setup on server` first
+
 ## Features
 
 - High-quality webcam broadcasting
 - H.264 video codec
+- Video transmission via UDP using custom protocol
+- AES encryption
 - Bitrate control
 - Video resolution control
 - Different display shapes
@@ -25,10 +31,6 @@ Mod and plugin that allows players to broadcast their webcams
 - Velocity proxy support
 
 ![screenshot](images/screenshot.jpg)
-
-## Warning
-
-This project is new and may not work well. Please [**submit an issue**](https://github.com/DimasKama/Webcam/issues/new) if you find a bug
 
 ## Client Usage
 
@@ -72,7 +74,7 @@ Here are the default values with their descriptions:
   "max_display_distance": 100.0, // The distance in blocks from player, in which other players can see his webcam
   "display_on_face": false,      // Whether to display webcam on player model face or above his head
   "display_shape": "round",      // Shape of webcams displayed above players' head. Possible values: "round", "square"
-  "display_offset_y": 1.2,       // Y offset of webcams displayed above players' head
+  "display_offset_y": 1.3,       // Y offset of webcams displayed above players' head
   "display_size": 1.2,           // Size of webcams displayed above players' head
   "hide_nicknames": true,        // Whether to hide player's nickname if his webcam is enabled
   "display_self_webcam": false,  // Whether to show the player's webcam to himself
