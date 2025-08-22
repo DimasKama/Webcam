@@ -1,3 +1,5 @@
-### Paper
-- Rename Spigot version to Paper
-- Fix incompatibility with Folia
+### Common
+- Set default display_offset_y to 1.3
+
+### Fabric
+- Fix Iris shaders incompatibility
