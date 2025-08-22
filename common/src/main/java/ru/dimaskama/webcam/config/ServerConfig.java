@@ -38,7 +38,7 @@ public record ServerConfig(
             defaultedField(Codec.doubleRange(MIN_MAX_DISPLAY_DISTANCE, MAX_MAX_DISPLAY_DISTANCE), "max_display_distance", () -> 100.0).forGetter(ServerConfig::maxDisplayDistance),
             defaultedField(Codec.BOOL, "display_on_face", () -> false).forGetter(ServerConfig::displayOnFace),
             defaultedField(VideoDisplayShape.CODEC, "display_shape", () -> VideoDisplayShape.ROUND).forGetter(ServerConfig::displayShape),
-            defaultedField(Codec.floatRange(MIN_DISPLAY_OFFSET_Y, MAX_DISPLAY_OFFSET_Y), "display_offset_y", () -> 1.2F).forGetter(ServerConfig::displayOffsetY),
+            defaultedField(Codec.floatRange(MIN_DISPLAY_OFFSET_Y, MAX_DISPLAY_OFFSET_Y), "display_offset_y", () -> 1.3F).forGetter(ServerConfig::displayOffsetY),
             defaultedField(Codec.floatRange(MIN_DISPLAY_SIZE, MAX_DISPLAY_SIZE), "display_size", () -> 1.2F).forGetter(ServerConfig::displaySize),
             defaultedField(Codec.BOOL, "hide_nicknames", () -> true).forGetter(ServerConfig::hideNicknames),
             defaultedField(Codec.BOOL, "display_self_webcam", () -> false).forGetter(ServerConfig::displaySelfWebcam),
@@ -47,7 +47,7 @@ public record ServerConfig(
     ).apply(instance, ServerConfig::new));
 
     public ServerConfig() {
-        this(DEFAULT_PORT, "", "", 1000, 60, 100.0, false, VideoDisplayShape.ROUND, 1.2F, 1.2F, true, false, new SyncedServerConfig(), new MessagesConfig());
+        this(DEFAULT_PORT, "", "", 1000, 60, 100.0, false, VideoDisplayShape.ROUND, 1.3F, 1.2F, true, false, new SyncedServerConfig(), new MessagesConfig());
     }
 
     public ServerConfig withPort(int port) {
