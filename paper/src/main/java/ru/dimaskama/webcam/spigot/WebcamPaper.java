@@ -126,12 +126,21 @@ public class WebcamPaper extends JavaPlugin {
                     }
 
                     @Override
-                    public boolean checkPermission(UUID playerUuid, String permission, boolean defaultValue) {
+                    public boolean checkWebcamBroadcastPermission(UUID playerUuid) {
                         Player player = Bukkit.getPlayer(playerUuid);
                         if (player != null) {
-                            return player.hasPermission(permission);
+                            return player.hasPermission(Webcam.WEBCAM_BROADCAST_PERMISSION);
                         }
-                        return defaultValue;
+                        return true;
+                    }
+
+                    @Override
+                    public boolean checkWebcamViewPermission(UUID playerUuid) {
+                        Player player = Bukkit.getPlayer(playerUuid);
+                        if (player != null) {
+                            return player.hasPermission(Webcam.WEBCAM_VIEW_PERMISSION);
+                        }
+                        return true;
                     }
                 }
         );

@@ -19,6 +19,8 @@ public interface WebcamService {
 
     void acceptForNearbyPlayers(UUID playerUuid, double maxDistance, Consumer<Set<UUID>> action);
 
-    boolean checkPermission(UUID playerUuid, String permission, boolean defaultValue);
+    boolean checkWebcamBroadcastPermission(UUID playerUuid);
+
+    boolean checkWebcamViewPermission(UUID playerUuid);
 
 }

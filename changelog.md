@@ -1,5 +1,5 @@
 ### Common
-- Set default display_offset_y to 1.3
+- Mark MC 1.21.6 as not compatible
 
-### Fabric
-- Fix Iris shaders incompatibility
+### NeoForge
+- Add NeoForge mod version
