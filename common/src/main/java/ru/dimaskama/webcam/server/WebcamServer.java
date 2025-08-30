@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 public class WebcamServer extends SimpleChannelInboundHandler<C2SPacket> {
 
     private static final AtomicInteger THREAD_COUNT = new AtomicInteger();
-    private static volatile EventLoopGroup eventLoopGroup;
+    private static EventLoopGroup eventLoopGroup;
     private static WebcamServer instance;
     private final Map<UUID, PlayerState> playerStateMap = new ConcurrentHashMap<>();
     private final int port;
@@ -42,15 +42,11 @@ public class WebcamServer extends SimpleChannelInboundHandler<C2SPacket> {
         this.host = host;
         this.keepAlivePeriod = keepAlivePeriod;
         if (eventLoopGroup == null) {
-            synchronized (WebcamServer.class) {
-                if (eventLoopGroup == null) {
-                    eventLoopGroup = new NioEventLoopGroup(r -> {
-                        Thread thread = new Thread(r, "Webcam Server #" + THREAD_COUNT.getAndIncrement());
-                        thread.setDaemon(true);
-                        return thread;
-                    });
-                }
-            }
+            eventLoopGroup = new NioEventLoopGroup(r -> {
+                Thread thread = new Thread(r, "Webcam Server #" + THREAD_COUNT.getAndIncrement());
+                thread.setDaemon(true);
+                return thread;
+            });
         }
         channel = new Bootstrap()
                 .group(eventLoopGroup)
@@ -226,8 +222,8 @@ public class WebcamServer extends SimpleChannelInboundHandler<C2SPacket> {
     }
 
     private void updatePermissions(WebcamService service, PlayerState player) {
-        boolean broadcast = service.checkPermission(player.getUuid(), Webcam.WEBCAM_BROADCAST_PERMISSION, true);
-        boolean view = service.checkPermission(player.getUuid(), Webcam.WEBCAM_VIEW_PERMISSION, true);
+        boolean broadcast = service.checkWebcamBroadcastPermission(player.getUuid());
+        boolean view = service.checkWebcamViewPermission(player.getUuid());
         boolean prevBroadcast = player.updateBroadcastPermission(broadcast);
         boolean prevView = player.updateViewPermission(view);
         if (broadcast != prevBroadcast || view != prevView) {

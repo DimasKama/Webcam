@@ -1,0 +1,47 @@
+plugins {
+    id 'net.neoforged.gradle.userdev' version "${neogradle_version}"
+    id 'net.neoforged.gradle.mixin' version "${neogradle_mixin_version}"
+}
+
+apply plugin: 'com.gradleup.shadow'
+apply plugin: 'com.modrinth.minotaur'
+
+apply from: "https://raw.githubusercontent.com/henkelmax/mod-gradle-scripts/${mod_gradle_script_version}/mod.gradle"
+
+processResources {
+    filesMatching('**/*.toml') {
+        expand 'version': mod_version,
+                'minecraft_version': minecraft_version,
+                'min_minecraft_version': min_minecraft_version
+    }
+}
+
+repositories {
+    maven {
+        url "https://maven.shedaniel.me/"
+    }
+    maven {
+        name "KvotheShaed Releases"
+        url "https://maven.kvotheshaed.ru/releases"
+    }
+    maven {
+        url = "https://api.modrinth.com/maven"
+    }
+}
+
+dependencies {
+    compileOnly "me.shedaniel.cloth:cloth-config-neoforge:${cloth_config_version}"
+
+    shadow minecraftLibrary("org.openpnp:opencv:${opencv_version}")
+
+    shadow minecraftLibrary("ru.dimaskama:javah264:${javah264_version}")
+
+    minecraftLibrary "maven.modrinth:iris:${iris_version}-neoforge"
+}
+
+shadowJar {
+    // Exclude 32-bit binaries
+    exclude("**/x86_32/**")
+    exclude("**/ARMv7/**")
+    exclude("**/*-x86/**")
+}

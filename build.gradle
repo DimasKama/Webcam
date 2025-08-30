@@ -94,7 +94,7 @@ ext.runCommand = { String commandName, boolean ignoreExitCode, String... command
 tasks.register('publishModsToModrinth') {
     group = 'webcam'
     doLast {
-        runGradleTasks(['clean'], ['fabric:modrinth'])
+        runGradleTasks(['clean'], ['neoforge:modrinth', 'fabric:modrinth'])
     }
 }
 
@@ -108,7 +108,7 @@ tasks.register('publishPluginToModrinth') {
 tasks.register('publishAllToModrinth') {
     group = 'webcam'
     doLast {
-        runGradleTasks(['clean'], ['fabric:modrinth', 'paper:modrinth', 'velocity:modrinth'])
+        runGradleTasks(['clean'], ['neoforge:modrinth', 'fabric:modrinth', 'paper:modrinth', 'velocity:modrinth'])
     }
 }
 
@@ -122,6 +122,6 @@ tasks.register('publishPluginsToHangar') {
 tasks.register('publishEverything') {
     group = 'webcam'
     doLast {
-        runGradleTasks(['clean'], ['fabric:modrinth', 'paper:modrinth', 'velocity:modrinth', 'paper:publishAllPublicationsToHangar', 'velocity:publishAllPublicationsToHangar'])
+        runGradleTasks(['clean'], ['neoforge:modrinth', 'fabric:modrinth', 'paper:modrinth', 'velocity:modrinth', 'paper:publishAllPublicationsToHangar', 'velocity:publishAllPublicationsToHangar'])
     }
 }

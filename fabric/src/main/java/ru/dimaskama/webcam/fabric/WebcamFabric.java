@@ -8,16 +8,14 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import ru.dimaskama.webcam.Webcam;
-import ru.dimaskama.webcam.WebcamEvents;
-import ru.dimaskama.webcam.WebcamService;
-import ru.dimaskama.webcam.fabric.command.WebcamconfigFabricCommand;
+import ru.dimaskama.webcam.*;
+import ru.dimaskama.webcam.command.WebcamconfigModCommand;
 import ru.dimaskama.webcam.message.Channel;
 import ru.dimaskama.webcam.message.Message;
 import ru.dimaskama.webcam.message.ServerMessaging;
@@ -33,8 +31,8 @@ public class WebcamFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        Webcam.init(
-                splitModVersion(MOD_CONTAINER.getMetadata().getVersion().toString()),
+        WebcamMod.init(
+                MOD_CONTAINER.getMetadata().getVersion().toString(),
                 FabricLoader.getInstance().getConfigDir().resolve(Webcam.MOD_ID),
                 new WebcamService() {
                     @Override
@@ -83,22 +81,46 @@ public class WebcamFabric implements ModInitializer {
                                             players.add(levelPlayer.getUUID());
                                         }
                                     }
-                                } catch (Exception ignored) {}
+                                } catch (Exception ignored) {
+                                }
                                 action.accept(players);
                             }
                         }
                     }
 
                     @Override
-                    public boolean checkPermission(UUID playerUuid, String permission, boolean defaultValue) {
+                    public boolean checkWebcamBroadcastPermission(UUID playerUuid) {
                         MinecraftServer server = WebcamFabric.server;
                         if (server != null) {
                             ServerPlayer player = server.getPlayerList().getPlayer(playerUuid);
                             if (player != null) {
-                                return Permissions.check(player, permission, defaultValue);
+                                return Permissions.check(player, Webcam.WEBCAM_BROADCAST_PERMISSION, true);
                             }
                         }
-                        return defaultValue;
+                        return true;
+                    }
+
+                    @Override
+                    public boolean checkWebcamViewPermission(UUID playerUuid) {
+                        MinecraftServer server = WebcamFabric.server;
+                        if (server != null) {
+                            ServerPlayer player = server.getPlayerList().getPlayer(playerUuid);
+                            if (player != null) {
+                                return Permissions.check(player, Webcam.WEBCAM_VIEW_PERMISSION, true);
+                            }
+                        }
+                        return true;
+                    }
+                },
+                new WebcamModService() {
+                    @Override
+                    public boolean isModLoaded(String modId) {
+                        return FabricLoader.getInstance().isModLoaded(modId);
+                    }
+
+                    @Override
+                    public boolean checkWebcamconfigCommandPermission(CommandSourceStack commandSource) {
+                        return Permissions.check(commandSource, Webcam.WEBCAMCONFIG_COMMAND_PERMISSION, 2);
                     }
                 }
         );
@@ -113,16 +135,8 @@ public class WebcamFabric implements ModInitializer {
         });
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) ->
                 WebcamEvents.onPlayerDisconnected(handler.getPlayer().getUUID()));
-        CommandRegistrationCallback.EVENT.register(new WebcamconfigFabricCommand());
-    }
-
-    private static String splitModVersion(String modVersion) {
-        int firstDash = modVersion.indexOf('-');
-        return firstDash != -1 ? modVersion.substring(0, firstDash) : modVersion;
-    }
-
-    public static ResourceLocation id(String path) {
-        return ResourceLocation.fromNamespaceAndPath(Webcam.MOD_ID, path);
+        CommandRegistrationCallback.EVENT.register((dispatcher, r, e) ->
+                WebcamconfigModCommand.register(dispatcher));
     }
 
 }

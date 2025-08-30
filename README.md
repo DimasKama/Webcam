@@ -5,6 +5,7 @@ Mod and plugin that allows players to broadcast their webcams
 ## Downloads
 
 - [Fabric / Quilt](https://modrinth.com/mod/webcam-mod/versions?l=fabric)
+- [NeoForge](https://modrinth.com/mod/webcam-mod/versions?l=neoforge)
 - [Bukkit / Spigot / Paper](https://modrinth.com/plugin/webcam-mod/versions?l=bukkit)
 - [Velocity](https://modrinth.com/mod/webcam-mod/versions?l=velocity)
 
@@ -34,7 +35,7 @@ If you are a server administrator, please read the section `Setup on server` fir
 
 ## Client Usage
 
-Put the mod in the `mods` directory with the Fabric API. The settings menu can be opened by hotkey (`C` by default)
+Put the mod in the `mods` directory (with the Fabric API if you are using Fabric). The settings menu can be opened by hotkey (`C` by default)
 
 ![settings](images/settings.jpg)
 
@@ -60,7 +61,7 @@ If you are using Velocity, see `Setup on proxy`
 ### Server config
 
 Location:
-- Fabric / Quilt: `config/webcam/server.json`
+- Fabric / Quilt / NeoForge: `config/webcam/server.json`
 - Bukkit / Spigot / Paper: `plugins/webcam/server.json`
 
 Here are the default values with their descriptions:  
