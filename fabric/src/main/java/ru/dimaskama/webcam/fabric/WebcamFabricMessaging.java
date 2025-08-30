@@ -1,7 +1,9 @@
 package ru.dimaskama.webcam.fabric;
 
+import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
@@ -37,6 +39,12 @@ public class WebcamFabricMessaging {
                             context.player().getGameProfile().getName(),
                             (T) payload.message()
                     )
+            );
+        } else if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+            net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.registerGlobalReceiver(
+                    WebcamFabricMessaging.getPayloadType(Channel.SECRET),
+                    (payload, context) ->
+                            ru.dimaskama.webcam.client.WebcamModClient.onMessageReceived(payload.message())
             );
         }
     }

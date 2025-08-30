@@ -1,0 +1,36 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+#issueTrackerURL = ""
+license = "All-Rights-Reserved"
+
+[[mods]]
+modId = "webcam"
+version = "${version}"
+displayName = "Webcam"
+authors = "DimasKama"
+description = '''
+Webcams in Minecraft
+'''
+logoFile = "icon.png"
+
+[[dependencies.webcam]]
+modId = "neoforge"
+type = "required"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.webcam]]
+modId = "minecraft"
+type = "required"
+versionRange = "[${min_minecraft_version},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.webcam]]
+modId = "cloth_config"
+type = "optional"
+ordering = "NONE"
+side = "BOTH"
+
+[[mixins]]
+config = "webcam.mixins.json"

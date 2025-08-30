@@ -1,0 +1,32 @@
+apply plugin: 'com.gradleup.shadow'
+apply plugin: 'fabric-loom'
+
+apply from: "https://raw.githubusercontent.com/henkelmax/mod-gradle-scripts/${mod_gradle_script_version}/mod.gradle"
+
+repositories {
+    maven {
+        name "KvotheShaed Releases"
+        url "https://maven.kvotheshaed.ru/releases"
+    }
+    maven {
+        url "https://maven.shedaniel.me/"
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
+}
+
+dependencies {
+    implementation("org.openpnp:opencv:${opencv_version}")
+
+    implementation("ru.dimaskama:javah264:${javah264_version}")
+
+    modCompileOnly("maven.modrinth:iris:${iris_version}-fabric")
+}

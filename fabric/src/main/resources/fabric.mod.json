@@ -17,16 +17,16 @@
   "environment": "*",
   "entrypoints": {
     "preLaunch": [
-      "ru.dimaskama.webcam.fabric.WebcamPreLaunch"
+      "ru.dimaskama.webcam.fabric.WebcamFabricPreLaunch"
     ],
     "main": [
       "ru.dimaskama.webcam.fabric.WebcamFabric"
     ],
     "client": [
-      "ru.dimaskama.webcam.fabric.client.WebcamFabricClient"
+      "ru.dimaskama.webcam.client.fabric.WebcamFabricClient"
     ],
     "modmenu": [
-      "ru.dimaskama.webcam.fabric.client.compat.ModMenuCompat"
+      "ru.dimaskama.webcam.client.fabric.compat.ModMenuCompat"
     ]
   },
   "mixins": [
