@@ -82,9 +82,6 @@ public class WebcamFabricClient implements ClientModInitializer {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) ->
                 WebcamModClient.onServerJoinEvent());
 
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
-                WebcamModClient.onServerDisconnectEvent());
-
         ClientTickEvents.END_CLIENT_TICK.register(WebcamModClient::onClientTick);
 
         ClientTickEvents.END_WORLD_TICK.register(WebcamModClient::onClientLevelTick);

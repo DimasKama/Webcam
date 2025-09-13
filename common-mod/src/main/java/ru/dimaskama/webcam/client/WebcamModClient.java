@@ -74,12 +74,6 @@ public class WebcamModClient {
         }
     }
 
-    public static void onServerDisconnectEvent() {
-        WebcamClient.shutdown();
-        DisplayingVideoManager.INSTANCE.clear();
-        KnownSourceManager.INSTANCE.clear();
-    }
-
     public static void onClientTick(Minecraft minecraft) {
         WebcamClient client = WebcamClient.getInstance();
         if (client != null) {
