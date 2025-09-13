@@ -4,11 +4,12 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
+import ru.dimaskama.webcam.Webcam;
 import ru.dimaskama.webcam.WebcamMod;
 import ru.dimaskama.webcam.client.WebcamModClient;
 import ru.dimaskama.webcam.client.config.ClientConfig;
 import ru.dimaskama.webcam.client.net.WebcamClient;
-import ru.dimaskama.webcam.client.Webcams;
+import ru.dimaskama.webcam.client.cap.Capturing;
 
 public class WebcamHud {
 
@@ -19,7 +20,7 @@ public class WebcamHud {
 
     public static void drawHud(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
         ClientConfig config = WebcamModClient.CONFIG.getData();
-        if (config.showIcons()) {
+        if (config.showIcons() && !Webcam.getService().isInReplay()) {
             guiGraphics.pose().pushPose();
             guiGraphics.pose().translate(
                     config.hud().iconX() >= 0.0F ? config.hud().iconX() : (guiGraphics.guiWidth() + config.hud().iconX() - 16.0F * config.hud().iconScale()),
@@ -34,7 +35,7 @@ public class WebcamHud {
                 sprite = WEBCAM_NO_CONNECTION_SPRITE;
             } else if (!client.isAuthenticated()) {
                 sprite = WEBCAM_CONNECTING_SPRITE;
-            } else if (client.isListeningFrames() && Webcams.isCapturing(config.selectedDevice())) {
+            } else if (client.isListeningFrames() && Capturing.isCapturing(config.selectedDevice())) {
                 sprite = WEBCAM_SPRITE;
             } else {
                 sprite = WEBCAM_DISABLED_SPRITE;

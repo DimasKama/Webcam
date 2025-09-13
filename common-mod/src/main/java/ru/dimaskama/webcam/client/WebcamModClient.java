@@ -3,9 +3,11 @@ package ru.dimaskama.webcam.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import org.lwjgl.glfw.GLFW;
 import ru.dimaskama.webcam.Webcam;
 import ru.dimaskama.webcam.WebcamMod;
+import ru.dimaskama.webcam.client.cap.Capturing;
 import ru.dimaskama.webcam.client.net.WebcamClient;
 import ru.dimaskama.webcam.client.screen.WebcamScreen;
 import ru.dimaskama.webcam.config.JsonConfig;
@@ -50,7 +52,7 @@ public class WebcamModClient {
         CONFIG.loadOrCreate();
         BLOCKED_SOURCES.loadOrCreate();
 
-        Webcams.init();
+        Capturing.init();
         UpdateDevicesButton.updateDevices();
 
         WebcamRenderTypes.init();
@@ -66,7 +68,7 @@ public class WebcamModClient {
     }
 
     public static void onServerJoinEvent() {
-        if (service.canSendToServer(Channel.SECRET_REQUEST)) {
+        if (!Webcam.getService().isInReplay() && service.canSendToServer(Channel.SECRET_REQUEST)) {
             Webcam.getLogger().info("Sending secret request");
             service.sendToServer(new SecretRequestMessage(Webcam.getVersion()));
         }
@@ -74,6 +76,8 @@ public class WebcamModClient {
 
     public static void onServerDisconnectEvent() {
         WebcamClient.shutdown();
+        DisplayingVideoManager.INSTANCE.clear();
+        KnownSourceManager.INSTANCE.clear();
     }
 
     public static void onClientTick(Minecraft minecraft) {
@@ -81,12 +85,18 @@ public class WebcamModClient {
         if (client != null) {
             client.minecraftTick();
         }
-        Webcams.updateListeners();
+        Capturing.updateListeners();
         while (OPEN_WEBCAM_MENU_KEY.consumeClick()) {
             minecraft.setScreen(new WebcamScreen(null, false));
         }
         if (canUseAdvancedConfigScreen()) {
             service.tickAdvancedConfigScreen(minecraft);
+        }
+    }
+
+    public static void onClientLevelTick(ClientLevel level) {
+        if (level.tickRateManager().runsNormally()) {
+            DisplayingVideoManager.INSTANCE.levelTick();
         }
     }
 
@@ -99,9 +109,11 @@ public class WebcamModClient {
     }
 
     private static void onSecretMessageReceived(SecretMessage secret) {
-        Webcam.getLogger().info("Received secret");
-        Minecraft minecraft = Minecraft.getInstance();
-        WebcamClient.initialize(minecraft.player.getUUID(), minecraft.getConnection().getConnection().getRemoteAddress(), secret);
+        if (!Webcam.getService().isInReplay()) {
+            Webcam.getLogger().info("Received Webcam secret");
+            Minecraft minecraft = Minecraft.getInstance();
+            WebcamClient.initialize(minecraft.player.getUUID(), minecraft.getConnection().getConnection().getRemoteAddress(), secret);
+        }
     }
 
 }

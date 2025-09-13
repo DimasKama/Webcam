@@ -1,6 +1,7 @@
 package ru.dimaskama.webcam.fabric;
 
 import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -110,6 +111,12 @@ public class WebcamFabric implements ModInitializer {
                             }
                         }
                         return true;
+                    }
+
+                    @Override
+                    public boolean isInReplay() {
+                        return FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT
+                                && ru.dimaskama.webcam.client.fabric.compat.replay.ReplaysCompat.isInReplay();
                     }
                 },
                 new WebcamModService() {

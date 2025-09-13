@@ -1,4 +1,4 @@
-package ru.dimaskama.webcam.client;
+package ru.dimaskama.webcam.client.cap;
 
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.*;
@@ -7,11 +7,12 @@ import nu.pattern.OpenCV;
 import org.opencv.core.Core;
 import org.opencv.videoio.VideoCapture;
 import ru.dimaskama.webcam.Webcam;
+import ru.dimaskama.webcam.client.WebcamModClient;
 import ru.dimaskama.webcam.client.config.Resolution;
 
-public class Webcams {
+public class Capturing {
 
-    private static final ObjectSortedSet<WebcamOutputListener> LISTENERS = ObjectSortedSets.synchronize(new ObjectLinkedOpenHashSet<>());
+    private static final ObjectSortedSet<DeviceOutputListener> LISTENERS = ObjectSortedSets.synchronize(new ObjectLinkedOpenHashSet<>());
     private static final Int2ObjectMap<CapturingDevice> CAPTURING_DEVICES = Int2ObjectMaps.synchronize(new Int2ObjectOpenHashMap<>());
     private static volatile IntList devices = IntList.of();
     private static volatile boolean updatingDevices;
@@ -59,11 +60,11 @@ public class Webcams {
         return devices;
     }
 
-    public static void addListener(WebcamOutputListener listener) {
+    public static void addListener(DeviceOutputListener listener) {
         LISTENERS.add(listener);
     }
 
-    public static void removeListener(WebcamOutputListener listener) {
+    public static void removeListener(DeviceOutputListener listener) {
         LISTENERS.remove(listener);
     }
 
@@ -91,7 +92,7 @@ public class Webcams {
                 int fps = 30;
                 int imageDimension = 360;
                 synchronized (LISTENERS) {
-                    for (WebcamOutputListener listener : LISTENERS) {
+                    for (DeviceOutputListener listener : LISTENERS) {
                         if (deviceNumber == listener.getSelectedDevice()) {
                             if (listener.isListeningFrames()) {
                                 ++frameListenerCount;

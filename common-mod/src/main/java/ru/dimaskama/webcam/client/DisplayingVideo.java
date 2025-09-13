@@ -8,6 +8,7 @@ import net.minecraft.resources.ResourceLocation;
 import ru.dimaskama.javah264.DecodeResult;
 import ru.dimaskama.javah264.H264Decoder;
 import ru.dimaskama.webcam.WebcamMod;
+import ru.dimaskama.webcam.client.cap.ImageUtil;
 import ru.dimaskama.webcam.net.NalUnit;
 import ru.dimaskama.webcam.net.VideoSource;
 
@@ -23,7 +24,7 @@ public class DisplayingVideo {
     private final VideoPacketBuffer buffer = new VideoPacketBuffer(WebcamModClient.CONFIG.getData().packetBufferSize(), this::acceptVideoPacket);
     private final AtomicReference<DecodeResult> newFrame = new AtomicReference<>();
     private volatile VideoSource lastSource;
-    private volatile long lastChunkTime = System.currentTimeMillis();
+    private long lastChunkTime;
     private NativeImage image;
     private DynamicTexture texture;
 
@@ -71,10 +72,10 @@ public class DisplayingVideo {
         return lastChunkTime;
     }
 
-    public void onVideoPacket(VideoSource source, NalUnit nalUnit) {
+    public void onVideoPacket(long time, VideoSource source, NalUnit nalUnit) {
+        this.lastChunkTime = time;
         buffer.receivePacket(nalUnit.sequenceNumber(), nalUnit.data());
         lastSource = source;
-        lastChunkTime = System.currentTimeMillis();
     }
 
     private void acceptVideoPacket(byte[] nal) {

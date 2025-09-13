@@ -23,4 +23,6 @@ public interface WebcamService {
 
     boolean checkWebcamViewPermission(UUID playerUuid);
 
+    boolean isInReplay();
+
 }
