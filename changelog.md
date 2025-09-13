@@ -1,5 +1,6 @@
 ### Common
-- Mark MC 1.21.6 as not compatible
+- Set display_self_webcam=true by default
+- Add license
 
-### NeoForge
-- Add NeoForge mod version
+### Fabric & NeoForge
+- Add Flashback & ReplayMod compatibility

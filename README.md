@@ -27,9 +27,9 @@ If you are a server administrator, please read the section `Setup on server` fir
 - Display distance limit
 - Webcam broadcast and view permissions
 - Advanced client configuration ([Mod Menu](https://modrinth.com/mod/modmenu) & [Cloth Config API](https://modrinth.com/mod/cloth-config) required)
-- Ability to hide all webcams
 - Ability to hide selected players' webcams
 - Velocity proxy support
+- Compatibility with [ReplayMod](https://modrinth.com/mod/replaymod) & [Flashback](https://modrinth.com/mod/flashback)
 
 ![screenshot](images/screenshot.jpg)
 
@@ -54,8 +54,8 @@ Webcam connection is encrypted, but we don't guarantee the security of it. Use a
 
 ## Setup on server
 
-Webcam server works as a separate UDP server.  
-So you need to open port in your server's firewall and panel (if present) to make Webcam server work. This is port `25454/udp` by default. You can change the port in server config    
+Webcam plugin uses UDP socket to transfer video packets.  
+So you need to open a UDP port in your server's firewall and panel (if present) to make Webcam server work. This is port `25454/udp` by default. You can change the port in server config    
 If you are using Velocity, see `Setup on proxy`
 
 ### Server config
@@ -78,7 +78,7 @@ Here are the default values with their descriptions:
   "display_offset_y": 1.3,       // Y offset of webcams displayed above players' head
   "display_size": 1.2,           // Size of webcams displayed above players' head
   "hide_nicknames": true,        // Whether to hide player's nickname if his webcam is enabled
-  "display_self_webcam": false,  // Whether to show the player's webcam to himself
+  "display_self_webcam": true,   // Whether to show the player's webcam to himself
   "synced": {                    // These settings are synchronized with clients
     "image_dimension": 360,      // Side dimension of square webcam images
     "mtu": 1100,                 // Maximum Transmission Unit of packets. You can lower this, if image on webcam starts look glitchy or not arrives at all
@@ -122,3 +122,19 @@ bind_address=
 # The hostname that clients should use to connect to the Webcam server. Leave blank to use the address, that player is connected to Minecraft with. Can be a simple address or an address with port. This will override configured values on backend server's
 host=
 ```
+
+## License
+
+This mod is licensed under **No Unauthorized Distribution License**, which full text can be found at https://github.com/DimasKama/Webcam/blob/master/LICENSE.md
+
+### Summary
+
+- **Modpacks:** You can use this mod in modpacks, but you must not include its files directly. Instead, list it as a dependency (mod reference) that points to an official download source.
+
+- **For Devs:** You’re allowed to create addons or integrate support for the mod, but you must not copy any of its code. Instead, make it an external dependency that gets downloaded from an official source.
+
+- **Redistribution Limits:** You cannot re-upload or share the mod’s code or compiled files publicly without the author’s explicit permission. Forking for personal use is okay, but distributing a compiled fork is not allowed.
+
+- **Personal Use:** You may use and modify the mod for personal use, but any changes must remain private and not be shared publicly.
+
+- **Official Download Requirement:** Any dependency or modpack reference must point to the official download sources provided by the author.

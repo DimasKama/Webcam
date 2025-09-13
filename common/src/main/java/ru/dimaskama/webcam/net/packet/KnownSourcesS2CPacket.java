@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public record KnownSourcesS2CPacket(List<KnownSource> sources) implements Packet {
+public record KnownSourcesS2CPacket(
+        List<KnownSource> sources
+) implements Packet {
 
     public KnownSourcesS2CPacket(ByteBuf buf) {
         this(decodeSources(buf));

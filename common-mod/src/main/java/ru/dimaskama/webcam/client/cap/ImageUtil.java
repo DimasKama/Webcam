@@ -1,4 +1,4 @@
-package ru.dimaskama.webcam.client;
+package ru.dimaskama.webcam.client.cap;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import org.lwjgl.system.MemoryUtil;

@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
-import ru.dimaskama.webcam.client.Webcams;
+import ru.dimaskama.webcam.client.cap.Capturing;
 
 import java.util.function.IntConsumer;
 
@@ -21,9 +21,9 @@ public class DeviceSelectButton extends AbstractButton {
 
     @Override
     public void onPress() {
-        IntList available = Webcams.getDevices();
+        IntList available = Capturing.getDevices();
         if (available.isEmpty()) {
-            Webcams.broadcastError(Component.translatable("webcam.error.no_available"));
+            Capturing.broadcastError(Component.translatable("webcam.error.no_available"));
             selected = -1;
         } else {
             selected = available.getInt((available.indexOf(selected) + 1) % available.size());

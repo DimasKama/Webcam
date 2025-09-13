@@ -11,16 +11,15 @@ import org.joml.Quaternionf;
 import org.joml.Vector2fc;
 import org.joml.Vector3dc;
 import ru.dimaskama.webcam.client.DisplayingVideo;
+import ru.dimaskama.webcam.client.DisplayingVideoManager;
 import ru.dimaskama.webcam.client.WebcamModClient;
-import ru.dimaskama.webcam.client.net.WebcamClient;
 import ru.dimaskama.webcam.net.VideoSource;
 
 public class WebcamWorldRenderer {
 
     public static void renderWorldWebcams(Camera camera, PoseStack poseStack, MultiBufferSource consumers) {
-        WebcamClient client = WebcamClient.getInstance();
-        if (client != null && client.hasViewPermission() && WebcamModClient.CONFIG.getData().showWebcams()) {
-            client.getDisplayingVideos().values().forEach(displayingVideo -> {
+        if (DisplayingVideoManager.INSTANCE.hasViewPermission() && WebcamModClient.CONFIG.getData().showWebcams()) {
+            DisplayingVideoManager.INSTANCE.forEach(displayingVideo -> {
                 DisplayingVideo.RenderData renderData = displayingVideo.getRenderData();
                 if (renderData != null && renderData.source() instanceof VideoSource.Custom custom) {
                     renderImage(camera, poseStack, consumers, custom, renderData.textureId());

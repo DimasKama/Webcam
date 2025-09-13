@@ -4,6 +4,7 @@ import net.minecraft.network.chat.Component;
 import ru.dimaskama.javah264.H264Encoder;
 import ru.dimaskama.javah264.exception.EncoderException;
 import ru.dimaskama.javah264.exception.UnknownPlatformException;
+import ru.dimaskama.webcam.client.cap.DeviceException;
 
 import java.io.IOException;
 
