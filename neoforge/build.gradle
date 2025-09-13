@@ -24,9 +24,6 @@ repositories {
         name "KvotheShaed Releases"
         url "https://maven.kvotheshaed.ru/releases"
     }
-    maven {
-        url = "https://api.modrinth.com/maven"
-    }
 }
 
 dependencies {

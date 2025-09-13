@@ -7,6 +7,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
 import ru.dimaskama.webcam.message.Channel;
 import ru.dimaskama.webcam.message.Message;
+import ru.dimaskama.webcam.net.packet.Packet;
 
 import javax.annotation.Nullable;
 
@@ -21,5 +22,7 @@ public interface WebcamClientService {
     Screen createAdvancedConfigScreen(@Nullable Screen parent);
 
     RenderType createWebcamRenderType(String name, RenderPipeline renderPipeline, ResourceLocation textureId);
+
+    void recordPacket(Packet packet);
 
 }

@@ -11,7 +11,6 @@ import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import ru.dimaskama.webcam.*;
 import ru.dimaskama.webcam.logger.Slf4jLogger;
@@ -19,6 +18,7 @@ import ru.dimaskama.webcam.message.Channel;
 import ru.dimaskama.webcam.message.Message;
 import ru.dimaskama.webcam.message.ServerMessaging;
 
+import javax.annotation.Nullable;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
@@ -110,6 +110,11 @@ public class WebcamNeoForge {
                             }
                         }
                         return true;
+                    }
+
+                    @Override
+                    public boolean isInReplay() {
+                        return false;
                     }
                 },
                 new WebcamModService() {

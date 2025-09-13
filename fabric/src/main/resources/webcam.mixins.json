@@ -7,7 +7,10 @@
     "client.LivingEntityRendererMixin",
     "client.NativeImageAccessor",
     "client.PlayerRendererMixin",
-    "client.PlayerRenderStateMixin"
+    "client.PlayerRenderStateMixin",
+    "client.fabric.replaymod.ConnectionEventHandlerAccessor",
+    "client.fabric.replaymod.FullReplaySenderMixin",
+    "client.fabric.replaymod.ReplayModMixin"
   ],
   "mixins": [
   ],

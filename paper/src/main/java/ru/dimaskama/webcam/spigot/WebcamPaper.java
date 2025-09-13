@@ -142,6 +142,11 @@ public class WebcamPaper extends JavaPlugin {
                         }
                         return true;
                     }
+
+                    @Override
+                    public boolean isInReplay() {
+                        return false;
+                    }
                 }
         );
         getCommand("webcamconfig").setTabCompleter(this::tabCompleteConfigCommand);

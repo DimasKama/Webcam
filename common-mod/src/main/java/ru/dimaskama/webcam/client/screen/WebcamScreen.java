@@ -13,6 +13,10 @@ import net.minecraft.resources.ResourceLocation;
 import ru.dimaskama.webcam.Webcam;
 import ru.dimaskama.webcam.WebcamMod;
 import ru.dimaskama.webcam.client.*;
+import ru.dimaskama.webcam.client.cap.DeviceException;
+import ru.dimaskama.webcam.client.cap.ImageUtil;
+import ru.dimaskama.webcam.client.cap.DeviceOutputListener;
+import ru.dimaskama.webcam.client.cap.Capturing;
 import ru.dimaskama.webcam.client.config.Resolution;
 import ru.dimaskama.webcam.client.config.ClientConfig;
 import ru.dimaskama.webcam.client.net.WebcamClient;
@@ -22,7 +26,7 @@ import ru.dimaskama.webcam.net.packet.ShowWebcamsC2SPacket;
 
 import javax.annotation.Nullable;
 
-public class WebcamScreen extends Screen implements WebcamOutputListener {
+public class WebcamScreen extends Screen implements DeviceOutputListener {
 
     public static final ResourceLocation BACKGROUND_SPRITE = WebcamMod.id("background");
     private static final ResourceLocation PREVIEW_TEXTURE = WebcamMod.id("webcam_preview");
@@ -123,7 +127,7 @@ public class WebcamScreen extends Screen implements WebcamOutputListener {
     protected void init() {
         if (!addedToWebcamListeners) {
             addedToWebcamListeners = true;
-            Webcams.addListener(this);
+            Capturing.addListener(this);
         }
         ClientConfig config = WebcamModClient.CONFIG.getData();
         if (firstInit) {
@@ -228,7 +232,7 @@ public class WebcamScreen extends Screen implements WebcamOutputListener {
                 guiGraphics.drawCenteredString(font, errorMessage, width >> 1, menuY + MENU_HEIGHT + 10, 0xFFFF5555);
             }
         }
-        if (showPreview && previewTexture != null && selectedDevice == previewTextureDeviceIndex && Webcams.isCapturing(selectedDevice)) {
+        if (showPreview && previewTexture != null && selectedDevice == previewTextureDeviceIndex && Capturing.isCapturing(selectedDevice)) {
             guiGraphics.blit(RenderPipelines.GUI_TEXTURED, PREVIEW_TEXTURE, menuX + menuWidth - PREVIEW_DIM - 4, menuY + 21, 0.0F, 0.0F, PREVIEW_DIM, PREVIEW_DIM, PREVIEW_DIM, PREVIEW_DIM);
         }
     }
@@ -264,7 +268,7 @@ public class WebcamScreen extends Screen implements WebcamOutputListener {
             WebcamModClient.CONFIG.setData(newConfig);
             WebcamModClient.CONFIG.save();
         }
-        Webcams.removeListener(this);
+        Capturing.removeListener(this);
         addedToWebcamListeners = false;
     }
 

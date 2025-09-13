@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import ru.dimaskama.webcam.WebcamMod;
-import ru.dimaskama.webcam.client.Webcams;
+import ru.dimaskama.webcam.client.cap.Capturing;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -26,7 +26,7 @@ public class UpdateDevicesButton extends AbstractButton {
 
     public static void updateDevices() {
         updateFuture.join();
-        updateFuture = CompletableFuture.runAsync(Webcams::updateDevices, Util.backgroundExecutor());
+        updateFuture = CompletableFuture.runAsync(Capturing::updateDevices, Util.backgroundExecutor());
     }
 
     @Override
