@@ -99,11 +99,6 @@ public class WebcamNeoForgeClientEvents {
     }
 
     @SubscribeEvent
-    private static void onClientPlayerLoggingOutEvent(ClientPlayerNetworkEvent.LoggingOut event) {
-        WebcamModClient.onServerDisconnectEvent();
-    }
-
-    @SubscribeEvent
     private static void onClientTickEvent(ClientTickEvent.Post event) {
         WebcamModClient.onClientTick(Minecraft.getInstance());
     }
