@@ -6,7 +6,9 @@
   "client": [
     "client.LivingEntityRendererMixin",
     "client.NativeImageAccessor",
-    "client.PlayerRendererMixin"
+    "client.PlayerRendererMixin",
+    "client.PlayerRendererMixin",
+    "client.MinecraftMixin"
   ],
   "mixins": [
   ],

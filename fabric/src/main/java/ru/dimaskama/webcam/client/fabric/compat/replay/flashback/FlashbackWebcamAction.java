@@ -13,7 +13,7 @@ import ru.dimaskama.webcam.client.fabric.compat.replay.ReplayWebcamMessage;
 public class FlashbackWebcamAction implements Action {
 
     public static final FlashbackWebcamAction INSTANCE = new FlashbackWebcamAction();
-    private static final ResourceLocation NAME = WebcamMod.id("action/webcam");
+    private static final ResourceLocation NAME = WebcamMod.id("action/webcam_optional");
 
     @Override
     public ResourceLocation name() {
