@@ -12,8 +12,9 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceLocation;
 import ru.dimaskama.webcam.WebcamMod;
-import ru.dimaskama.webcam.client.DisplayingVideo;
+import ru.dimaskama.webcam.client.DisplayingVideoManager;
 import ru.dimaskama.webcam.client.KnownSourceClient;
+import ru.dimaskama.webcam.client.KnownSourceManager;
 import ru.dimaskama.webcam.client.WebcamModClient;
 import ru.dimaskama.webcam.client.config.BlockedSources;
 import ru.dimaskama.webcam.client.net.WebcamClient;
@@ -22,8 +23,6 @@ import ru.dimaskama.webcam.net.packet.RemoveBlockedSourceC2SPacket;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.function.Predicate;
 
 public class PlayersWebcamsList extends ContainerObjectSelectionList<PlayersWebcamsList.Entry> {
@@ -42,27 +41,18 @@ public class PlayersWebcamsList extends ContainerObjectSelectionList<PlayersWebc
         this.filter = filter;
         clearEntries();
         BlockedSources blocked = WebcamModClient.BLOCKED_SOURCES.getData();
-        WebcamClient client = WebcamClient.getInstance();
-        Map<UUID, KnownSourceClient> onServer;
-        if (client != null) {
-            onServer = client.getKnownSources();
-        } else {
-            onServer = null;
-        }
         List<KnownSourceClient> allSources = new ArrayList<>();
         blocked.sources().forEach((uuid, name) -> {
-            KnownSourceClient sourceOnServer = onServer != null ? onServer.get(uuid) : null;
+            KnownSourceClient sourceOnServer = KnownSourceManager.INSTANCE.get(uuid);
             allSources.add(sourceOnServer != null
                     ? sourceOnServer
                     : new KnownSourceClient(uuid, name));
         });
-        if (onServer != null) {
-            onServer.values().forEach(source -> {
-                if (!blocked.contains(source.getUuid())) {
-                    allSources.add(source);
-                }
-            });
-        }
+        KnownSourceManager.INSTANCE.forEach(source -> {
+            if (!blocked.contains(source.getUuid())) {
+                allSources.add(source);
+            }
+        });
         for (KnownSourceClient source : allSources) {
             if (filter.test(source)) {
                 addEntry(new Entry(source, blocked.contains(source.getUuid())));
@@ -88,14 +78,9 @@ public class PlayersWebcamsList extends ContainerObjectSelectionList<PlayersWebc
                 WebcamClient client = WebcamClient.getInstance();
                 if (b) {
                     WebcamModClient.BLOCKED_SOURCES.getData().add(source.getUuid(), source.getName());
-                    if (client != null) {
-                        if (client.isAuthenticated()) {
-                            client.send(new AddBlockedSourceC2SPacket(source.getUuid()));
-                        }
-                        DisplayingVideo displayingVideo = client.getDisplayingVideos().remove(source.getUuid());
-                        if (displayingVideo != null) {
-                            displayingVideo.close();
-                        }
+                    DisplayingVideoManager.INSTANCE.remove(source.getUuid());
+                    if (client != null && client.isAuthenticated()) {
+                        client.send(new AddBlockedSourceC2SPacket(source.getUuid()));
                     }
                 } else {
                     WebcamModClient.BLOCKED_SOURCES.getData().remove(source.getUuid());

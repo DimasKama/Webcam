@@ -14,15 +14,18 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.Nullable;
 import ru.dimaskama.webcam.client.WebcamClientService;
 import ru.dimaskama.webcam.client.WebcamModClient;
+import ru.dimaskama.webcam.client.fabric.compat.replay.ReplaysCompat;
 import ru.dimaskama.webcam.client.fabric.screen.AdvancedWebcamScreen;
 import ru.dimaskama.webcam.fabric.WebcamFabricMessaging;
 import ru.dimaskama.webcam.client.render.WebcamHud;
 import ru.dimaskama.webcam.client.render.WebcamWorldRenderer;
 import ru.dimaskama.webcam.message.Channel;
 import ru.dimaskama.webcam.message.Message;
+import ru.dimaskama.webcam.net.packet.Packet;
+
+import javax.annotation.Nullable;
 
 public class WebcamFabricClient implements ClientModInitializer {
 
@@ -63,6 +66,11 @@ public class WebcamFabricClient implements ClientModInitializer {
                                 .createCompositeState(false)
                 );
             }
+
+            @Override
+            public void recordPacket(Packet packet) {
+                ReplaysCompat.recordPacket(packet);
+            }
         });
 
         KeyBindingHelper.registerKeyBinding(WebcamModClient.OPEN_WEBCAM_MENU_KEY);
@@ -79,6 +87,10 @@ public class WebcamFabricClient implements ClientModInitializer {
                 WebcamModClient.onServerDisconnectEvent());
 
         ClientTickEvents.END_CLIENT_TICK.register(WebcamModClient::onClientTick);
+
+        ClientTickEvents.END_WORLD_TICK.register(WebcamModClient::onClientLevelTick);
+
+        ReplaysCompat.init();
     }
 
 }

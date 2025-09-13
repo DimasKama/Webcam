@@ -13,8 +13,8 @@ import net.minecraft.util.Mth;
 import org.joml.Quaternionf;
 import org.joml.Vector2fc;
 import ru.dimaskama.webcam.client.DisplayingVideo;
+import ru.dimaskama.webcam.client.DisplayingVideoManager;
 import ru.dimaskama.webcam.client.WebcamModClient;
-import ru.dimaskama.webcam.client.net.WebcamClient;
 import ru.dimaskama.webcam.net.VideoSource;
 
 public class WebcamRenderLayer<M extends HumanoidModel<AbstractClientPlayer>> extends RenderLayer<AbstractClientPlayer, M> {
@@ -30,9 +30,8 @@ public class WebcamRenderLayer<M extends HumanoidModel<AbstractClientPlayer>> ex
     public void render(PoseStack poseStack, MultiBufferSource consumers, int light, AbstractClientPlayer entity, float limbAngle, float limbDistance, float tickDelta, float animationProgress, float headYaw, float headPitch) {
         LocalPlayer localPlayer = Minecraft.getInstance().player;
         if (localPlayer != null && !entity.isInvisibleTo(localPlayer)) {
-            WebcamClient client = WebcamClient.getInstance();
-            if (client != null && client.hasViewPermission() && WebcamModClient.CONFIG.getData().showWebcams()) {
-                DisplayingVideo displayingVideo = client.getDisplayingVideos().get(entity.getUUID());
+            if (DisplayingVideoManager.INSTANCE.hasViewPermission() && WebcamModClient.CONFIG.getData().showWebcams()) {
+                DisplayingVideo displayingVideo = DisplayingVideoManager.INSTANCE.get(entity.getUUID());
                 if (displayingVideo != null) {
                     DisplayingVideo.RenderData renderData = displayingVideo.getRenderData();
                     if (renderData != null) {

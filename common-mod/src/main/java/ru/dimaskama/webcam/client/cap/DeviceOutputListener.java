@@ -1,10 +1,10 @@
-package ru.dimaskama.webcam.client;
+package ru.dimaskama.webcam.client.cap;
 
 import ru.dimaskama.webcam.client.config.Resolution;
 
 import javax.annotation.Nullable;
 
-public interface WebcamOutputListener extends Comparable<WebcamOutputListener> {
+public interface DeviceOutputListener extends Comparable<DeviceOutputListener> {
 
     int getSelectedDevice();
 
@@ -26,7 +26,7 @@ public interface WebcamOutputListener extends Comparable<WebcamOutputListener> {
     }
 
     @Override
-    default int compareTo(WebcamOutputListener o) {
+    default int compareTo(DeviceOutputListener o) {
         return Integer.compare(getPriority(), o.getPriority());
     }
 

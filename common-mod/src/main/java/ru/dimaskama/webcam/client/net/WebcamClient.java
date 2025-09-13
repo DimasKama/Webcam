@@ -9,6 +9,9 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import ru.dimaskama.webcam.Webcam;
+import ru.dimaskama.webcam.client.cap.DeviceException;
+import ru.dimaskama.webcam.client.cap.DeviceOutputListener;
+import ru.dimaskama.webcam.client.cap.Capturing;
 import ru.dimaskama.webcam.config.SyncedServerConfig;
 import ru.dimaskama.webcam.client.*;
 import ru.dimaskama.webcam.client.config.ClientConfig;
@@ -21,12 +24,10 @@ import javax.annotation.Nullable;
 import javax.crypto.SecretKey;
 import java.net.*;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class WebcamClient extends SimpleChannelInboundHandler<Packet> implements WebcamOutputListener {
+public class WebcamClient extends SimpleChannelInboundHandler<Packet> implements DeviceOutputListener {
 
     private static final AtomicInteger THREAD_COUNT = new AtomicInteger();
     private static volatile EventLoopGroup eventLoopGroup;
@@ -38,14 +39,11 @@ public class WebcamClient extends SimpleChannelInboundHandler<Packet> implements
     private final int keepAlivePeriod;
     private final Channel channel;
     private final AdaptableH264Encoder h264Encoder;
-    private final Map<UUID, DisplayingVideo> displayingVideos = new ConcurrentHashMap<>();
-    private final Map<UUID, KnownSourceClient> knownSources = new ConcurrentHashMap<>();
     private volatile boolean wasAuthenticated;
     private volatile boolean authenticated;
     private volatile SyncedServerConfig serverConfig = new SyncedServerConfig();
     private volatile long lastPacketTime;
     private volatile boolean broadcastPermission = true;
-    private volatile boolean viewPermission = true;
     private int nalSequenceNumber;
     private long lastAuthPacketSent;
     private int authAttempts;
@@ -83,7 +81,7 @@ public class WebcamClient extends SimpleChannelInboundHandler<Packet> implements
                 .sync()
                 .channel();
         h264Encoder = new AdaptableH264Encoder();
-        Webcams.addListener(this);
+        Capturing.addListener(this);
     }
 
     public static void initialize(UUID playerUuid, SocketAddress minecraftSocketAddress, SecretMessage secret) {
@@ -159,22 +157,6 @@ public class WebcamClient extends SimpleChannelInboundHandler<Packet> implements
         return authenticated;
     }
 
-    public Map<UUID, DisplayingVideo> getDisplayingVideos() {
-        return displayingVideos;
-    }
-
-    public Map<UUID, KnownSourceClient> getKnownSources() {
-        return knownSources;
-    }
-
-    public boolean hasBroadcastPermission() {
-        return broadcastPermission;
-    }
-
-    public boolean hasViewPermission() {
-        return viewPermission;
-    }
-
     public void send(Packet packet) {
         channel.writeAndFlush(packet);
     }
@@ -193,44 +175,23 @@ public class WebcamClient extends SimpleChannelInboundHandler<Packet> implements
             wasAuthenticated = true;
             authAttempts = 0;
         } else {
-            knownSources.values().removeIf(source -> {
-                source.close();
-                return true;
-            });
+            KnownSourceManager.INSTANCE.clear();
         }
     }
 
     public void close() {
-        Webcams.removeListener(this);
+        Capturing.removeListener(this);
         h264Encoder.close();
         try {
             channel.close().sync();
         } catch (Exception e) {
             Webcam.getLogger().error("Failed to close Webcam client channel", e);
         }
-        clearDisplayingVideos();
         setAuthenticated(false);
-    }
-
-    private void clearDisplayingVideos() {
-        Minecraft.getInstance().execute(() ->
-                displayingVideos.values().removeIf(displayingVideo -> {
-                    displayingVideo.close();
-                    return true;
-                })
-        );
     }
 
     public void minecraftTick() {
         long time = System.currentTimeMillis();
-        displayingVideos.values().removeIf(displayingVideo -> {
-            if (time - displayingVideo.getLastChunkTime() > 5000L) {
-                displayingVideo.close();
-                Webcam.getLogger().info("Removing displaying video " + displayingVideo.getUuid() + " as it was inactive for 5s");
-                return true;
-            }
-            return false;
-        });
         if (authenticated && (time - lastPacketTime) > 10L * keepAlivePeriod) {
             setAuthenticated(false);
             Webcam.getLogger().warn("Webcam server timed out");
@@ -251,6 +212,7 @@ public class WebcamClient extends SimpleChannelInboundHandler<Packet> implements
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Packet packet) {
         lastPacketTime = System.currentTimeMillis();
+        WebcamModClient.getService().recordPacket(packet);
         switch (packet) {
             case AuthAckPacket ignored -> {
                 setAuthenticated(true);
@@ -259,44 +221,23 @@ public class WebcamClient extends SimpleChannelInboundHandler<Packet> implements
             }
             case PermissionsS2CPacket(boolean broadcast, boolean view) -> {
                 broadcastPermission = broadcast;
-                boolean prevView = viewPermission;
-                viewPermission = view;
-                if (prevView && !view) {
-                    clearDisplayingVideos();
-                }
+                DisplayingVideoManager.INSTANCE.setViewPermission(view);
             }
             case ServerConfigPacket(SyncedServerConfig config) ->
                     serverConfig = config;
             case KeepAlivePacket ignored ->
                     send(KeepAlivePacket.INSTANCE);
             case VideoS2CPacket(VideoSource source, NalUnit nal) -> {
-                if (viewPermission) {
-                    if (WebcamModClient.CONFIG.getData().showWebcams()) {
-                        if (!WebcamModClient.BLOCKED_SOURCES.getData().contains(source.getUuid())) {
-                            DisplayingVideo displayingVideo = displayingVideos.computeIfAbsent(source.getUuid(), DisplayingVideo::new);
-                            displayingVideo.onVideoPacket(source, nal);
-                        } else {
-                            send(new AddBlockedSourceC2SPacket(source.getUuid()));
-                        }
-                    } else {
-                        send(new ShowWebcamsC2SPacket(false));
-                    }
+                switch (DisplayingVideoManager.INSTANCE.onVideoPacket(source, nal)) {
+                    case WEBCAMS_ARE_DISABLED -> send(new ShowWebcamsC2SPacket(false));
+                    case SOURCE_IS_BLOCKED -> send(new AddBlockedSourceC2SPacket(source.getUuid()));
                 }
             }
             case CloseSourceS2CPacket(UUID sourceUuid) ->
-                    Minecraft.getInstance().execute(() -> {
-                        DisplayingVideo displayingVideo = displayingVideos.remove(sourceUuid);
-                        if (displayingVideo != null) {
-                            displayingVideo.close();
-                        }
-                    }
-            );
+                    Minecraft.getInstance().execute(() -> DisplayingVideoManager.INSTANCE.remove(sourceUuid));
             case KnownSourcesS2CPacket(List<KnownSource> sources) -> {
                 for (KnownSource source : sources) {
-                    KnownSourceClient prev = knownSources.put(source.getUuid(), new KnownSourceClient(source));
-                    if (prev != null) {
-                        prev.close();
-                    }
+                    KnownSourceManager.INSTANCE.add(new KnownSourceClient(source));
                 }
             }
             default -> throw new IllegalStateException("Can't handle packet " + packet + " from server");

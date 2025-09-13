@@ -1,4 +1,4 @@
-package ru.dimaskama.webcam.client;
+package ru.dimaskama.webcam.client.cap;
 
 import net.minecraft.network.chat.Component;
 
