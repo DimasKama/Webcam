@@ -13,7 +13,7 @@ import ru.dimaskama.webcam.net.packet.*;
 // Compatibility with Flashback & ReplayMod
 public class ReplaysCompat {
 
-    public static boolean SHOULD_APPLY = FlashbackCompat.IS_FLASHBACK_LOADED;
+    public static boolean SHOULD_APPLY = FlashbackCompat.IS_FLASHBACK_LOADED || ReplayModCompat.IS_REPLAYMOD_LOADED;
 
     public static void init() {
         if (SHOULD_APPLY) {
