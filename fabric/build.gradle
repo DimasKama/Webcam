@@ -25,16 +25,6 @@ repositories {
         name "KvotheShaed Releases"
         url "https://maven.kvotheshaed.ru/releases"
     }
-    exclusiveContent {
-        forRepository {
-            maven {
-                url = "https://api.modrinth.com/maven"
-            }
-        }
-        filter {
-            includeGroup "maven.modrinth"
-        }
-    }
 }
 
 dependencies {
@@ -51,6 +41,9 @@ dependencies {
     shadow implementation("ru.dimaskama:javah264:${javah264_version}")
 
     modCompileOnly("maven.modrinth:iris:${iris_version}-fabric")
+
+    modCompileOnly("maven.modrinth:flashback:${flashback_version}")
+    modCompileOnly("maven.modrinth:replaymod:${replaymod_version}")
 }
 
 loom {
