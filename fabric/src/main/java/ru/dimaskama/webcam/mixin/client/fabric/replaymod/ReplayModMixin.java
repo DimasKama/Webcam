@@ -13,14 +13,14 @@ import ru.dimaskama.webcam.client.fabric.compat.replay.replaymod.ReplayModWebcam
 import java.util.List;
 
 @Pseudo
-@Mixin(targets = "com.replaymod.core.ReplayMod")
+@Mixin(targets = "com.replaymod.core.ReplayMod", remap = false)
 abstract class ReplayModMixin {
 
-    @Shadow
+    @Shadow(remap = false)
     @Final
     private List<Module> modules;
 
-    @Inject(method = "<init>", at = @At("TAIL"))
+    @Inject(method = "<init>", at = @At(value = "TAIL", remap = false), remap = false)
     private void initTail(CallbackInfo ci) {
         modules.add(new ReplayModWebcamModule());
     }
