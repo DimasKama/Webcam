@@ -5,8 +5,8 @@ apply from: "https://raw.githubusercontent.com/henkelmax/mod-gradle-scripts/${mo
 
 repositories {
     maven {
-        name "KvotheShaed Releases"
-        url "https://maven.kvotheshaed.ru/releases"
+        name "DimasKama Releases"
+        url "https://maven.dimaskama.net/releases"
     }
     maven {
         url "https://maven.shedaniel.me/"
