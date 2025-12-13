@@ -22,8 +22,8 @@ repositories {
         url "https://maven.shedaniel.me/"
     }
     maven {
-        name "KvotheShaed Releases"
-        url "https://maven.kvotheshaed.ru/releases"
+        name "DimasKama Releases"
+        url "https://maven.dimaskama.net/releases"
     }
 }
 
