@@ -298,7 +298,7 @@ public class WebcamClient extends SimpleChannelInboundHandler<Packet> implements
         Minecraft minecraft = Minecraft.getInstance();
         minecraft.execute(() -> {
             if (minecraft.player != null) {
-                minecraft.player.displayClientMessage(Component.empty().append(e.getText()).withStyle(ChatFormatting.RED), true);
+                minecraft.player.sendOverlayMessage(Component.empty().append(e.getText()).withStyle(ChatFormatting.RED));
             }
         });
     }

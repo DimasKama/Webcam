@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.textures.FilterMode;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
@@ -70,7 +70,7 @@ public class WebcamFabricClient implements ClientModInitializer {
             }
         });
 
-        KeyBindingHelper.registerKeyBinding(WebcamModClient.OPEN_WEBCAM_MENU_KEY);
+        KeyMappingHelper.registerKeyMapping(WebcamModClient.OPEN_WEBCAM_MENU_KEY);
 
         HudElementRegistry.attachElementAfter(VanillaHudElements.MISC_OVERLAYS, WebcamMod.id("webcam_hud"), WebcamHud::drawHud);
 
@@ -79,7 +79,7 @@ public class WebcamFabricClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(WebcamModClient::onClientTick);
 
-        ClientTickEvents.END_WORLD_TICK.register(WebcamModClient::onClientLevelTick);
+        ClientTickEvents.END_LEVEL_TICK.register(WebcamModClient::onClientLevelTick);
 
         ReplaysCompat.init();
     }

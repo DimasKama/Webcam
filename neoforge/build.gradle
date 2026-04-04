@@ -1,5 +1,5 @@
 plugins {
-    id 'net.neoforged.gradle.userdev' version "${neogradle_version}"
+    id 'net.neoforged.moddev' version "${moddevgradle_version}"
 }
 
 apply plugin: 'com.gradleup.shadow'
@@ -32,7 +32,8 @@ dependencies {
 
     shadow minecraftLibrary("ru.dimaskama:javah264:${javah264_version}")
 
-    compileOnly "maven.modrinth:iris:${iris_version}-neoforge"
+    //TODO change version
+    compileOnly "maven.modrinth:iris:1.10.2+1.21.11-neoforge"
 }
 
 shadowJar {

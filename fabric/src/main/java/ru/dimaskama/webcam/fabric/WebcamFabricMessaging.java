@@ -24,7 +24,7 @@ public class WebcamFabricMessaging {
     public static <T extends Message> void register(Channel<T> channel, @Nullable ServerMessaging.ServerHandler<T> handler) {
         CustomPacketPayload.Type<MessagePayload> payloadType = new CustomPacketPayload.Type<>(Identifier.parse(channel.getId()));
         CHANNEL_TO_PAYLOAD.put(channel, payloadType);
-        (handler != null ? PayloadTypeRegistry.playC2S() : PayloadTypeRegistry.playS2C()).register(
+        (handler != null ? PayloadTypeRegistry.serverboundPlay() : PayloadTypeRegistry.clientboundPlay()).register(
                 payloadType,
                 StreamCodec.of(
                         (buf, payload) -> payload.message.writeBytes(buf),

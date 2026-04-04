@@ -1,5 +1,6 @@
 package ru.dimaskama.webcam.client.render;
 
+import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.shaders.UniformType;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -23,6 +24,7 @@ public class WebcamRenderTypes {
             .withFragmentShader("core/position_tex")
             .withSampler("Sampler0")
             .withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS)
+            .withDepthStencilState(DepthStencilState.DEFAULT)
             .build();
     private static final Function<Identifier, RenderType> SQUARE = Util.memoize(textureId -> WebcamModClient.getService().createWebcamRenderType(
             "webcam_square",
@@ -37,6 +39,7 @@ public class WebcamRenderTypes {
             .withFragmentShader("core/position_tex")
             .withSampler("Sampler0")
             .withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.TRIANGLE_FAN)
+            .withDepthStencilState(DepthStencilState.DEFAULT)
             .build();
     private static final Function<Identifier, RenderType> ROUND = Util.memoize(textureId -> WebcamModClient.getService().createWebcamRenderType(
             "webcam_round",

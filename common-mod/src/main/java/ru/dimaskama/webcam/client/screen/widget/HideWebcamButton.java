@@ -1,7 +1,7 @@
 package ru.dimaskama.webcam.client.screen.widget;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -26,8 +26,8 @@ public class HideWebcamButton extends AbstractButton {
     }
 
     @Override
-    protected void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        renderDefaultSprite(guiGraphics);
+    protected void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        extractDefaultSprite(guiGraphics);
         int spriteX = getX() + ((getWidth() - 16) >> 1);
         int spriteY = getY() + ((getHeight() - 16) >> 1);
         guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, blocked ? BLOCKED_SPRITE : NOT_BLOCKED_SPRITE, spriteX, spriteY, 16, 16, 0xFFFFFFFF);

@@ -1,8 +1,6 @@
 package ru.dimaskama.webcam.client.fabric.compat.replay.replaymod;
 
 import com.replaymod.recording.ReplayModRecording;
-import com.replaymod.recording.handler.ConnectionEventHandler;
-import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import ru.dimaskama.webcam.WebcamMod;
 import ru.dimaskama.webcam.client.fabric.compat.replay.ReplayWebcamMessage;
 import ru.dimaskama.webcam.mixin.client.fabric.replaymod.ConnectionEventHandlerAccessor;
@@ -46,10 +44,11 @@ public class ReplayModCompat {
         }
 
         private static void record(ReplayWebcamMessage replayMessage) {
-            ConnectionEventHandler connectionEventHandler = ReplayModRecording.instance.getConnectionEventHandler();
-            if (connectionEventHandler != null) {
-                connectionEventHandler.getPacketListener().save(new ClientboundCustomPayloadPacket(replayMessage));
-            }
+            // TODO
+//            ConnectionEventHandler connectionEventHandler = ReplayModRecording.instance.getConnectionEventHandler();
+//            if (connectionEventHandler != null) {
+//                connectionEventHandler.getPacketListener().save(new ClientboundCustomPayloadPacket(replayMessage));
+//            }
         }
 
     }

@@ -1,7 +1,7 @@
 package ru.dimaskama.webcam.client.screen.widget;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -23,8 +23,8 @@ public class PlayersWebcamsButton extends AbstractButton {
     }
 
     @Override
-    protected void renderContents(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        renderDefaultSprite(guiGraphics);
+    protected void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        extractDefaultSprite(guiGraphics);
         int spriteX = getX() + ((getWidth() - 12) >> 1);
         int spriteY = getY() + ((getHeight() - 12) >> 1);
         guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, SPRITE, spriteX, spriteY, 12, 12, 0xFFFFFFFF);

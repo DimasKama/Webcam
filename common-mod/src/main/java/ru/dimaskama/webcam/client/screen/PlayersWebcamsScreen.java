@@ -1,7 +1,7 @@
 package ru.dimaskama.webcam.client.screen;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -101,10 +101,10 @@ public class PlayersWebcamsScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
-        super.renderBackground(guiGraphics, mouseX, mouseY, delta);
+    public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float delta) {
+        super.extractBackground(guiGraphics, mouseX, mouseY, delta);
         guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, WebcamScreen.BACKGROUND_SPRITE, menuX, menuY, MENU_WIDTH, MENU_HEIGHT);
-        guiGraphics.drawString(font, title, (width - font.width(title)) >> 1, menuY + 7, 0xFF555555, false);
+        guiGraphics.text(font, title, (width - font.width(title)) >> 1, menuY + 7, 0xFF555555, false);
     }
 
     @Override

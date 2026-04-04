@@ -1,7 +1,7 @@
 package ru.dimaskama.webcam.client.render;
 
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import ru.dimaskama.webcam.Webcam;
@@ -18,7 +18,7 @@ public class WebcamHud {
     private static final Identifier WEBCAM_NO_CONNECTION_SPRITE = WebcamMod.id("webcam_no_connection");
     private static final Identifier WEBCAM_CONNECTING_SPRITE = WebcamMod.id("webcam_connecting");
 
-    public static void drawHud(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+    public static void drawHud(GuiGraphicsExtractor guiGraphics, DeltaTracker deltaTracker) {
         ClientConfig config = WebcamModClient.CONFIG.getData();
         if (config.showIcons() && !Webcam.getService().isInReplay()) {
             guiGraphics.pose().pushMatrix();

@@ -17,7 +17,7 @@ public class ReplaysCompat {
 
     public static void init() {
         if (SHOULD_APPLY) {
-            PayloadTypeRegistry.playS2C().register(ReplayWebcamMessage.TYPE, ReplayWebcamMessage.STREAM_CODEC);
+            PayloadTypeRegistry.clientboundPlay().register(ReplayWebcamMessage.TYPE, ReplayWebcamMessage.STREAM_CODEC);
             ClientPlayNetworking.registerGlobalReceiver(ReplayWebcamMessage.TYPE, ReplaysCompat::onReplayWebcamMessage);
 
             FlashbackCompat.init();

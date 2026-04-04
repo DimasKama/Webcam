@@ -2,7 +2,7 @@ package ru.dimaskama.webcam.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.SubmitNodeStorage;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
@@ -30,7 +30,7 @@ public class WebcamWorldRenderer {
     public static void renderImage(CameraRenderState camera, PoseStack poseStack, SubmitNodeStorage submitNodeStorage, VideoSource.Custom custom, Identifier textureId) {
         Vector3dc pos = custom.getPos();
         double maxDistance = custom.getMaxDistance();
-        if (camera.entityPos.distanceToSqr(pos.x(), pos.y(), pos.z()) <= maxDistance * maxDistance) {
+        if (camera.pos.distanceToSqr(pos.x(), pos.y(), pos.z()) <= maxDistance * maxDistance) {
             poseStack.pushPose();
             Vec3 cameraPos = camera.pos;
             poseStack.translate(pos.x() - cameraPos.x, pos.y() - cameraPos.y, pos.z() - cameraPos.z);

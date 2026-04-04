@@ -1,10 +1,10 @@
 package ru.dimaskama.webcam.client.screen.widget;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
-import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -45,7 +45,7 @@ public class PlayersWebcamsList extends ContainerObjectSelectionList<PlayersWebc
     }
 
     @Override
-    public void renderWidget(GuiGraphics guiGraphics, int i, int j, float f) {
+    public void extractWidgetRenderState(GuiGraphicsExtractor guiGraphics, int i, int j, float f) {
         if (shouldRefresh) {
             shouldRefresh = false;
             clearEntries();
@@ -68,7 +68,7 @@ public class PlayersWebcamsList extends ContainerObjectSelectionList<PlayersWebc
                 }
             }
         }
-        super.renderWidget(guiGraphics, i, j, f);
+        super.extractWidgetRenderState(guiGraphics, i, j, f);
     }
 
     @Override
@@ -108,7 +108,7 @@ public class PlayersWebcamsList extends ContainerObjectSelectionList<PlayersWebc
         }
 
         @Override
-        public void renderContent(GuiGraphics guiGraphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+        public void extractContent(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
             int x = getX() + 2;
             int y = getY();
             int entryWidth = getWidth();
@@ -124,16 +124,16 @@ public class PlayersWebcamsList extends ContainerObjectSelectionList<PlayersWebc
                 PlayerInfo playerInfo = connection != null ? connection.getPlayerInfo(source.getUuid()) : null;
                 PlayerSkin skin = playerInfo != null ? playerInfo.getSkin() : null;
                 if (skin != null) {
-                    PlayerFaceRenderer.draw(guiGraphics, skin, x, y, 32);
+                    PlayerFaceExtractor.extractRenderState(guiGraphics, skin, x, y, 32);
                 } else {
                     guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, UNKNOWN_SPRITE, x, y, 32, 32);
                 }
             }
 
-            guiGraphics.drawString(Minecraft.getInstance().font, source.getName(), x + 36, y + 4, 0xFFFFFFFF);
+            guiGraphics.text(Minecraft.getInstance().font, source.getName(), x + 36, y + 4, 0xFFFFFFFF);
 
             hideButton.setRectangle(20, 20, x + entryWidth - 4 - 22, y + ((entryHeight - 20) >> 1));
-            hideButton.render(guiGraphics, mouseX, mouseY, deltaTicks);
+            hideButton.extractRenderState(guiGraphics, mouseX, mouseY, deltaTicks);
         }
 
         @Override

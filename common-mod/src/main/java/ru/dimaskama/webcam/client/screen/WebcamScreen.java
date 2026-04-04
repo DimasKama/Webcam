@@ -2,7 +2,7 @@ package ru.dimaskama.webcam.client.screen;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
@@ -222,13 +222,13 @@ public class WebcamScreen extends Screen implements DeviceOutputListener {
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float delta) {
-        super.renderBackground(guiGraphics, mouseX, mouseY, delta);
+    public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float delta) {
+        super.extractBackground(guiGraphics, mouseX, mouseY, delta);
         guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_SPRITE, menuX, menuY, menuWidth, MENU_HEIGHT);
-        guiGraphics.drawString(font, title, (width - font.width(title)) >> 1, menuY + 7, 0xFF555555, false);
+        guiGraphics.text(font, title, (width - font.width(title)) >> 1, menuY + 7, 0xFF555555, false);
         if (errorMessage != null) {
             if (System.currentTimeMillis() - errorMessageTime <= 4000L) {
-                guiGraphics.drawCenteredString(font, errorMessage, width >> 1, menuY + MENU_HEIGHT + 10, 0xFFFF5555);
+                guiGraphics.centeredText(font, errorMessage, width >> 1, menuY + MENU_HEIGHT + 10, 0xFFFF5555);
             }
         }
         if (showPreview && previewTexture != null && selectedDevice == previewTextureDeviceIndex && Capturing.isCapturing(selectedDevice)) {
