@@ -57,6 +57,7 @@ public class CapturingDevice extends Thread {
         int realWidth = 0, realHeight = 0;
         int lastFps = 0;
         int realFps = 0;
+        boolean formatChecked = false;
 
         VideoCapture cap = new VideoCapture(deviceNumber);
         Mat mat = new Mat();
@@ -72,6 +73,7 @@ public class CapturingDevice extends Thread {
                     cap.set(CAP_PROP_FRAME_HEIGHT, resolution.height);
                     realWidth = (int) Math.round(cap.get(CAP_PROP_FRAME_WIDTH));
                     realHeight = (int) Math.round(cap.get(CAP_PROP_FRAME_HEIGHT));
+                    formatChecked = false;
                 }
                 int fps = this.fps;
                 if (lastFps != fps) {
@@ -82,6 +84,17 @@ public class CapturingDevice extends Thread {
                 if (!cap.read(mat)) {
                     throw new DeviceException(Component.translatable("webcam.error.device_disconnected", deviceNumber));
                 }
+                
+                if (!formatChecked) {
+                    formatChecked = true;
+                    org.opencv.core.Scalar sum = org.opencv.core.Core.sumElems(mat);
+                    // Some virtual cameras (OBSBOT) output NV12 which DSHOW can't convert to RGB, causing black frames.
+                    // Detect this and force NV12 format explicitly.
+                    if (mat.channels() == 3 && sum.val[0] == 0 && sum.val[1] == 0 && sum.val[2] == 0) {
+                        cap.set(CAP_PROP_FOURCC, org.opencv.videoio.VideoWriter.fourcc('N', 'V', '1', '2'));
+                    }
+                }
+                
                 onFrame(realFps, realWidth, realHeight, mat);
             }
         } finally {
