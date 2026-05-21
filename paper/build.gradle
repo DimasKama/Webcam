@@ -18,6 +18,8 @@ repositories {
     }
 }
 
+compileJava.dependsOn(':common:shadowJar')
+
 dependencies {
     implementation "io.netty:netty-handler:${netty_version}"
     implementation "io.netty:netty-buffer:${netty_version}"

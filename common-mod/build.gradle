@@ -13,6 +13,8 @@ repositories {
     }
 }
 
+compileJava.dependsOn(':common:shadowJar')
+
 dependencies {
     implementation("org.openpnp:opencv:${opencv_version}")
 
