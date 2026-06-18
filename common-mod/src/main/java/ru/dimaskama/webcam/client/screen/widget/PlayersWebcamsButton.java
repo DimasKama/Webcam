@@ -33,8 +33,8 @@ public class PlayersWebcamsButton extends AbstractButton {
     @Override
     public void onPress(InputWithModifiers inputWithModifiers) {
         Minecraft minecraft = Minecraft.getInstance();
-        Screen parent = minecraft.screen;
-        minecraft.setScreen(new PlayersWebcamsScreen(parent, parent != null && parent.isPauseScreen()));
+        Screen parent = minecraft.gui.screen();
+        minecraft.gui.setScreen(new PlayersWebcamsScreen(parent, parent != null && parent.isPauseScreen()));
     }
 
     @Override

@@ -23,10 +23,10 @@ abstract class LevelRendererMixin {
     private SubmitNodeStorage submitNodeStorage;
 
     @Inject(
-            method = "lambda$addMainPass$0",
+            method = "submitFeatures",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/LevelRenderer;submitBlockEntities(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/state/level/LevelRenderState;Lnet/minecraft/client/renderer/SubmitNodeStorage;)V"
+                    target = "Lnet/minecraft/client/renderer/LevelRenderer;submitBlockEntities(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/state/level/LevelRenderState;Lnet/minecraft/client/renderer/SubmitNodeCollector;)V"
             )
     )
     private void afterEntitiesRender(CallbackInfo ci) {

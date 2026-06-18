@@ -120,10 +120,10 @@ public class AdvancedWebcamScreen {
         }
 
         public static void tick(Minecraft minecraft) {
-            if (minecraft.screen instanceof ClothConfigScreen screen) {
+            if (minecraft.gui.screen() instanceof ClothConfigScreen screen) {
                 if (screen.getSelectedCategory().equals(MAIN_SETTINGS)) {
                     screen.selectedCategoryIndex = 0;
-                    minecraft.setScreen(new WebcamScreen(screen, true));
+                    minecraft.gui.setScreen(new WebcamScreen(screen, true));
                 }
             }
         }

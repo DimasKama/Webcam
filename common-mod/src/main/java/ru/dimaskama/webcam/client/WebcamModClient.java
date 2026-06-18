@@ -82,7 +82,7 @@ public class WebcamModClient {
         }
         Capturing.updateListeners();
         while (OPEN_WEBCAM_MENU_KEY.consumeClick()) {
-            minecraft.setScreen(new WebcamScreen(null, false));
+            minecraft.gui.setScreen(new WebcamScreen(null, false));
         }
         if (canUseAdvancedConfigScreen()) {
             service.tickAdvancedConfigScreen(minecraft);

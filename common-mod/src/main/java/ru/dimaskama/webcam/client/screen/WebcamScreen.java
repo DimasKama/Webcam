@@ -206,9 +206,9 @@ public class WebcamScreen extends Screen implements DeviceOutputListener {
                 Component.translatable("webcam.screen.webcam.advanced"),
                 button -> {
                     if (parent != null && notFromGame) {
-                        minecraft.setScreen(parent);
+                        minecraft.gui.setScreen(parent);
                     } else {
-                        minecraft.setScreen(WebcamModClient.getService().createAdvancedConfigScreen(this));
+                        minecraft.gui.setScreen(WebcamModClient.getService().createAdvancedConfigScreen(this));
                     }
                 }
         ).bounds(menuX + 4, buttonY, BUTTON_WIDTH, 16).build());
@@ -243,7 +243,7 @@ public class WebcamScreen extends Screen implements DeviceOutputListener {
 
     @Override
     public void onClose() {
-        minecraft.setScreen(parent);
+        minecraft.gui.setScreen(parent);
     }
 
     @Override
