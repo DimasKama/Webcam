@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import org.lwjgl.glfw.GLFW;
 import ru.dimaskama.webcam.Webcam;
 import ru.dimaskama.webcam.WebcamMod;
 import ru.dimaskama.webcam.client.cap.Capturing;
@@ -38,8 +37,8 @@ public class WebcamModClient {
     public static final KeyMapping.Category KEY_CATEGORY = new KeyMapping.Category(WebcamMod.id("webcam"));
     public static final KeyMapping OPEN_WEBCAM_MENU_KEY = new KeyMapping(
             "key.webcam.open_menu",
-            InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_C,
+            InputConstants.Type.KEYBOARD,
+            InputConstants.KEY_C,
             KEY_CATEGORY
     );
     private static WebcamClientService service;

@@ -35,7 +35,7 @@ public class WebcamWorldRenderer {
             Vec3 cameraPos = camera.pos;
             poseStack.translate(pos.x() - cameraPos.x, pos.y() - cameraPos.y, pos.z() - cameraPos.z);
             Vector2fc customRotation = custom.getCustomRotation();
-            poseStack.mulPose(customRotation != null
+            poseStack.rotate(customRotation != null
                     ? new Quaternionf().rotationYXZ(customRotation.y() - 90.0F, customRotation.x(), 0.0F)
                     : camera.orientation.conjugate(new Quaternionf()));
             float halfWidth = 0.5F * custom.getWidth();
